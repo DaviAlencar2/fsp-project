@@ -25,17 +25,22 @@ def processar_mensagem(mensagem, client_socket):
             arquivos = os.listdir(DATA_DIR)
             resposta = {"status": "ok", "arquivos": arquivos}
         
-        elif dados["comando"] == "ENVIAR": # Aqui ele não esta enviando o arquivo, ele esta apenas salvando o arquivo no servidor com o nome e conetudo que o cliente enviou.
+        elif dados["comando"] == "ENVIAR": 
+            # Aqui ele não esta enviando o arquivo, ele esta apenas salvando
+            # o arquivo no servidor com o nome e conetudo que o cliente enviou.
             nome_arquivo = dados["arquivo"]
+            caminho_arquivo = os.path.join(DATA_DIR, os.path.basename(nome_arquivo))
             conteudo = dados["conteudo"]
-            with open(DATA_DIR + nome_arquivo, "w") as f:
+            with open(caminho_arquivo, "w") as f:
                 f.write(conteudo)
             resposta = {"status": "ok", "mensagem": f"Arquivo '{nome_arquivo}' salvo no servidor."}
         
-        elif dados["comando"] == "BAIXAR": #Aqui ele não esta baixando o arquivo, ele esta apenas lendo o arquivo e enviando o conteudo para o cliente.
+        elif dados["comando"] == "BAIXAR":
+            #Aqui ele não esta baixando o arquivo, ele esta 
+            # apenas lendo o arquivo e enviando o conteudo para o cliente.
             nome_arquivo = dados["arquivo"]
             try:
-                with open(DATA_DIR + nome_arquivo, "r") as f:
+                with open(caminho_arquivo, "r") as f:
                     conteudo = f.read()
                 resposta = {"status": "ok", "conteudo": conteudo}
             except FileNotFoundError:
