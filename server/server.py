@@ -1,12 +1,12 @@
 #ToDo: Fazer o servidor receber e processar mensagens de multiplos clientes simultaneamente.
 
 '''
-Como meu servidor espera que o cliente se comunique com ele? 
-Ele espera que o cliente envie uma mensagem em formato JSON com o seguinte formato:
+O servidor espera que o cliente envie uma mensagem em formato JSON com o seguinte formato:
 {"comando": "COMANDO", "arquivo": "NOME_ARQUIVO", "conteudo": "CONTEUDO"}.
 
 Onde: COMANDO é uma string que pode ser "LISTAR", "ENVIAR" ou "BAIXAR"; NOME_ARQUIVO é o nome do arquivo que será manipulado; e CONTEUDO é o conteúdo do arquivo que será enviado ao servidor (usado apenas no comando "ENVIAR").
 
+Por enquanto, eu sei que o servidor não está enviando o arquivo, ele está apenas salvando o arquivo no servidor com o nome e conteúdo que o cliente enviou. E também sei que o servidor não está baixando o arquivo, ele está apenas lendo o arquivo e enviando o conteúdo para o cliente. Mas calma, vai melhorar! Sem Arthur a vida é bela.
 '''
 
 import os
