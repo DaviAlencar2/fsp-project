@@ -25,14 +25,14 @@ def processar_mensagem(mensagem, client_socket):
             arquivos = os.listdir(DATA_DIR)
             resposta = {"status": "ok", "arquivos": arquivos}
         
-        elif dados["comando"] == "ENVIAR":
+        elif dados["comando"] == "ENVIAR": # Aqui ele não esta enviando o arquivo, ele esta apenas salvando o arquivo no servidor com o nome e conetudo que o cliente enviou.
             nome_arquivo = dados["arquivo"]
             conteudo = dados["conteudo"]
             with open(DATA_DIR + nome_arquivo, "w") as f:
                 f.write(conteudo)
             resposta = {"status": "ok", "mensagem": f"Arquivo '{nome_arquivo}' salvo no servidor."}
         
-        elif dados["comando"] == "BAIXAR":
+        elif dados["comando"] == "BAIXAR": #Aqui ele não esta baixando o arquivo, ele esta apenas lendo o arquivo e enviando o conteudo para o cliente.
             nome_arquivo = dados["arquivo"]
             try:
                 with open(DATA_DIR + nome_arquivo, "r") as f:
@@ -44,10 +44,10 @@ def processar_mensagem(mensagem, client_socket):
         else:
             resposta = {"status": "erro", "mensagem": "Comando inválido."}
 
-    except json.JSONDecodeError:
+    except json.JSONDecodeError: # Se caiu aqui é pq o formato da mensagem não é um JSON válido.
         resposta = {"status": "erro", "mensagem": "Formato de mensagem inválido."}
 
-    client_socket.sendall(json.dumps(resposta).encode())
+    client_socket.sendall(json.dumps(resposta).encode()) # Envia a resposta para o cliente
 
 def iniciar_servidor():
   with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
