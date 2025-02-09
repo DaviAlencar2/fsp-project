@@ -2,7 +2,9 @@
 O servidor espera que o cliente envie uma mensagem em formato JSON com o seguinte formato:
 {"comando": "COMANDO", "arquivo": "NOME_ARQUIVO", "conteudo": "CONTEUDO"}.
 
-Onde: COMANDO é uma string que pode ser "LISTAR", "ENVIAR" ou "BAIXAR"; NOME_ARQUIVO é o nome do arquivo que será manipulado; e CONTEUDO é o conteúdo do arquivo que será enviado ao servidor (usado apenas no comando "ENVIAR").
+Onde: COMANDO é uma string que pode ser "LISTAR", "ENVIAR" ou "BAIXAR";
+NOME_ARQUIVO é o nome do arquivo que será manipulado;
+e CONTEUDO é o conteúdo do arquivo que será enviado ao servidor(usado apenas no comando "ENVIAR").
 '''
 
 import os
@@ -14,17 +16,15 @@ HOST = "127.0.0.1"
 PORT = 8080
 DATA_DIR = "data/"
 
-def processar_mensagem(mensagem, client_socket):
+def processar_mensagem(mensagem, client_socket): # Considerar colocar essa função em um arquivo separado chamdo fsep.py.
     try:
-        dados = json.loads(mensagem) # Converte a mensagem recebida para um dicionário
+        dados = json.loads(mensagem)
 
         if dados["comando"] == "LISTAR":
             arquivos = os.listdir(DATA_DIR)
             resposta = {"status": "ok", "arquivos": arquivos}
         
-        elif dados["comando"] == "ENVIAR": 
-            # Aqui ele não esta enviando o arquivo, ele esta apenas salvando
-            # o arquivo no servidor com o nome e conetudo que o cliente enviou.
+        elif dados["comando"] == "ENVIAR":
             nome_arquivo = dados["arquivo"]
             caminho_arquivo = os.path.join(DATA_DIR, os.path.basename(nome_arquivo))
             conteudo = dados["conteudo"]
@@ -33,8 +33,6 @@ def processar_mensagem(mensagem, client_socket):
             resposta = {"status": "ok", "mensagem": f"Arquivo '{nome_arquivo}' salvo no servidor."}
         
         elif dados["comando"] == "BAIXAR":
-            #Aqui ele não esta baixando o arquivo, ele esta 
-            # apenas lendo o arquivo e enviando o conteudo para o cliente.
             nome_arquivo = dados["arquivo"]
             try:
                 with open(caminho_arquivo, "r") as f:
@@ -46,10 +44,10 @@ def processar_mensagem(mensagem, client_socket):
         else:
             resposta = {"status": "erro", "mensagem": "Comando inválido."}
 
-    except json.JSONDecodeError: # Se caiu aqui é pq o formato da mensagem não é um JSON válido.
+    except json.JSONDecodeError:
         resposta = {"status": "erro", "mensagem": "Formato de mensagem inválido."}
 
-    client_socket.sendall(json.dumps(resposta).encode()) # Envia a resposta para o cliente
+    client_socket.sendall(json.dumps(resposta).encode())
 
 def cliente_thread(client_socket, addr):
     print(f"Conexão recebida de {addr}")
