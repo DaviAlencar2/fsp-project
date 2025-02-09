@@ -20,6 +20,7 @@ def processar_mensagem(mensagem, client_socket):
         
         elif dados["comando"] == "BAIXAR":
             nome_arquivo = dados["arquivo"]
+            caminho_arquivo = os.path.join(DATA_DIR, os.path.basename(nome_arquivo))
             try:
                 with open(caminho_arquivo, "r") as f:
                     conteudo = f.read()
