@@ -1,12 +1,3 @@
-'''
-O servidor espera que o cliente envie uma mensagem em formato JSON com o seguinte formato:
-{"comando": "COMANDO", "arquivo": "NOME_ARQUIVO", "conteudo": "CONTEUDO"}.
-
-Onde: COMANDO é uma string que pode ser "LISTAR", "ENVIAR" ou "BAIXAR";
-NOME_ARQUIVO é o nome do arquivo que será manipulado;
-e CONTEUDO é o conteúdo do arquivo que será enviado ao servidor(usado apenas no comando "ENVIAR").
-'''
-
 import socket
 import threading
 from fsep import processar_mensagem

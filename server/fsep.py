@@ -1,4 +1,6 @@
 #ToDo: Implementar Exceções para os casos de erro.
+#Considerar criar um novo campo: AUTOR.
+#ToDo: procurar alternativas para importação de módulos.
 
 import os
 import json
@@ -41,4 +43,9 @@ def processar_mensagem(mensagem, client_socket):
     except json.JSONDecodeError:
         resposta = {"status": "erro", "mensagem": "Formato de mensagem inválido."}
 
-    client_socket.sendall(json.dumps(resposta).encode())
+    client_socket.sendall(json.dumps(resposta).encode()) #Comentar em caso de testes rapidos onde o cliente não é necessário.
+
+# Teste
+if __name__ == "__main__":
+    print(os.listdir(DATA_DIR))
+    processar_mensagem('{"comando": "BAIXAR", "arquivo": "download_test.txt"}', None)
