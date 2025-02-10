@@ -1,6 +1,8 @@
 import os
 import json
-DATA_DIR = "data/"
+from client.client import DOWNLOAD_DIR
+
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 def processar_mensagem(mensagem, client_socket):
     try:
@@ -21,10 +23,13 @@ def processar_mensagem(mensagem, client_socket):
         elif dados["comando"] == "BAIXAR":
             nome_arquivo = dados["arquivo"]
             caminho_arquivo = os.path.join(DATA_DIR, os.path.basename(nome_arquivo))
+            caminho_cliente = os.path.join(DOWNLOAD_DIR, os.path.basename(nome_arquivo))
             try:
                 with open(caminho_arquivo, "r") as f:
                     conteudo = f.read()
-                resposta = {"status": "ok", "conteudo": conteudo}
+                with open(caminho_cliente, "w") as f:
+                    f.write(conteudo)
+                resposta = {"status": "ok", "mensagem": f"Arquivo '{nome_arquivo}' baixado com sucesso."}
             except FileNotFoundError:
                 resposta = {"status": "erro", "mensagem": "Arquivo não encontrado."}
 

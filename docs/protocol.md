@@ -10,3 +10,5 @@ A mensagem enviada pelo cliente deve estar no formato JSON com a seguinte estrut
     "arquivo": "NOME_ARQUIVO",
     "conteudo": "CONTEUDO"
 }
+```
+Observação: "conteudo" só é necessário no comando "enviar".
