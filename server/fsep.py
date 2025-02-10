@@ -1,3 +1,5 @@
+#ToDo: Implementar Exceções para os casos de erro.
+
 import os
 import json
 from client.client import DOWNLOAD_DIR
