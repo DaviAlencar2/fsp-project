@@ -5,6 +5,7 @@
 import os
 import json
 from client.client import DOWNLOAD_DIR
+from server.data_log import save_log
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data/files")
 
@@ -23,7 +24,8 @@ def processar_mensagem(mensagem, client_socket):
             with open(caminho_arquivo, "w") as f:
                 f.write(conteudo)
             resposta = {"status": "ok", "mensagem": f"Arquivo '{nome_arquivo}' salvo no servidor."}
-        
+            save_log(nome_arquivo,client_socket)
+
         elif dados["comando"] == "BAIXAR":
             nome_arquivo = dados["arquivo"]
             caminho_arquivo = os.path.join(DATA_DIR, os.path.basename(nome_arquivo))
@@ -43,11 +45,14 @@ def processar_mensagem(mensagem, client_socket):
     except json.JSONDecodeError:
         resposta = {"status": "erro", "mensagem": "Formato de mensagem inválido."}
 
-    client_socket.sendall(json.dumps(resposta).encode()) #Comentar em caso de testes rapidos onde o cliente não é necessário.
+    # client_socket.sendall(json.dumps(resposta).encode()) #Comentar em caso de testes rapidos onde o cliente não é necessário.
 
 # Teste
 if __name__ == "__main__":
     print(os.listdir(DATA_DIR))
-    processar_mensagem('{"comando": "ENVIAR", "arquivo": "baixar_test.txt", "conteudo": "testando o metodo de baixar para o servidor."}', None)
 
-    processar_mensagem('{"comando": "BAIXAR", "arquivo": "baixar_test.txt"}', None)
+    processar_mensagem('{"comando": "ENVIAR", "arquivo": "baixar_enviar_test.txt", "conteudo": "testando o metodo de baixar para o servidor."}', None)
+
+    processar_mensagem('{"comando": "BAIXAR", "arquivo": "baixar_enviar_test.txt"}', None)
+    
+    print(os.listdir(DOWNLOAD_DIR))
