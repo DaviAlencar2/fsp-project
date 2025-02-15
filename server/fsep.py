@@ -6,7 +6,7 @@ import os
 import json
 from client.client import DOWNLOAD_DIR
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data/files")
 
 def processar_mensagem(mensagem, client_socket):
     try:
@@ -48,4 +48,6 @@ def processar_mensagem(mensagem, client_socket):
 # Teste
 if __name__ == "__main__":
     print(os.listdir(DATA_DIR))
-    processar_mensagem('{"comando": "BAIXAR", "arquivo": "download_test.txt"}', None)
+    processar_mensagem('{"comando": "ENVIAR", "arquivo": "baixar_test.txt", "conteudo": "testando o metodo de baixar para o servidor."}', None)
+
+    processar_mensagem('{"comando": "BAIXAR", "arquivo": "baixar_test.txt"}', None)
