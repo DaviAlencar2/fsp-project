@@ -31,10 +31,12 @@ def processar_mensagem(mensagem, client_socket):
             caminho_arquivo = os.path.join(DATA_DIR, os.path.basename(nome_arquivo))
             caminho_cliente = os.path.join(DOWNLOAD_DIR, os.path.basename(nome_arquivo))
             try:
-                with open(caminho_arquivo, "r") as f:
-                    conteudo = f.read()
-                with open(caminho_cliente, "w") as f:
-                    f.write(conteudo)
+                with open(caminho_arquivo, "rb") as src, open(caminho_cliente, "wb") as dst:
+                    while True:
+                        bloco = src.read(4096)
+                        if not bloco:
+                            break
+                        dst.write(bloco)
                 resposta = {"status": "ok", "mensagem": f"Arquivo '{nome_arquivo}' baixado com sucesso."}
             except FileNotFoundError:
                 resposta = {"status": "erro", "mensagem": "Arquivo não encontrado."}
@@ -45,14 +47,10 @@ def processar_mensagem(mensagem, client_socket):
     except json.JSONDecodeError:
         resposta = {"status": "erro", "mensagem": "Formato de mensagem inválido."}
 
-    # client_socket.sendall(json.dumps(resposta).encode()) #Comentar em caso de testes rapidos onde o cliente não é necessário.
+    client_socket.sendall(json.dumps(resposta).encode()) #Comentar em caso de TESTES RÁPIDOS onde o cliente não é necessário.
 
-# Teste
+# Testes rápidos
 if __name__ == "__main__":
     print(os.listdir(DATA_DIR))
 
-    processar_mensagem('{"comando": "ENVIAR", "arquivo": "baixar_enviar_test.txt", "conteudo": "testando o metodo de baixar para o servidor."}', None)
-
-    processar_mensagem('{"comando": "BAIXAR", "arquivo": "baixar_enviar_test.txt"}', None)
-    
-    print(os.listdir(DOWNLOAD_DIR))
+    processar_mensagem('{"comando": "BAIXAR", "arquivo": "test_image.jpg"}', None)
