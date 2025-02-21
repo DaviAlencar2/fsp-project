@@ -35,7 +35,18 @@ def processar_mensagem(mensagem, client_socket):
         elif dados["comando"] == "BAIXAR":
             nome_arquivo = dados["arquivo"]
             caminho_arquivo = os.path.join(DATA_DIR, os.path.basename(nome_arquivo))
-            caminho_cliente = os.path.join(DOWNLOAD_DIR, os.path.basename(nome_arquivo))
+            nm,ext = os.path.splitext(os.path.basename(nome_arquivo))
+
+            # verifica se o usuario ja baixou esse arquivo e adiciona um contador ao nome do arquivo.
+            nome = f"{nm}{ext}"
+            contador = 1
+
+            while os.path.exists(os.path.join(DOWNLOAD_DIR, nome)):
+                nome = f"{nm}({contador}){ext}"
+                contador += 1
+
+            caminho_cliente = os.path.join(DOWNLOAD_DIR, nome)
+
             try:
                 with arquivo_lock:
                     with open(caminho_arquivo, "rb") as src, open(caminho_cliente, "wb") as dst:
