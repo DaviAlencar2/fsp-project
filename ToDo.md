@@ -1,6 +1,6 @@
 ## ToDo List
 
-- [ ] Criar Cliente
+- [X] Criar Cliente
 
 - [ ] Implementar o comando de EXLUIR no `fsep.py`
 
