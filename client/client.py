@@ -50,7 +50,7 @@ def send_file():
     print(resposta["mensagem"])
 
 def download_file():
-    file_name = input("NOME DO ARQUIVO A SER BAIXADO: ")
+    
     resposta =  send_msg({
         "comando": "BAIXAR",
         "arquivo": file_name

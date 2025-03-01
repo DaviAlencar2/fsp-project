@@ -8,8 +8,11 @@ PORT = 8080
 def cliente_thread(client_socket, addr):
     print(f"Conexão recebida de {addr}")
     try:
-        mensagem = client_socket.recv(4096).decode()
-        processar_mensagem(mensagem,client_socket)
+        while True:
+            mensagem = client_socket.recv(4096).decode()
+            if not mensagem:
+                break
+            processar_mensagem(mensagem,client_socket)
     except Exception as e:
         print(f"Erro ao processar mensagem de {addr}: {e}")
     finally:
