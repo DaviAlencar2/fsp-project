@@ -2,9 +2,9 @@
 
 - [X] Criar Cliente
 
-- [ ] Implementar o comando de EXLUIR no `fsep.py`
+- [X] Implementar o comando de EXLUIR no `fsep.py`
 
-- [ ] Melhorar lógica do comando de ENVIAR no `fsep.py`
+- [X] Melhorar lógica do comando de ENVIAR no `fsep.py`
 
 - [ ] Criar pasta de arquivos enviados no cliente e fazer lógica para armazena-los.
 
