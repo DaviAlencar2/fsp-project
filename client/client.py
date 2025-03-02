@@ -72,3 +72,8 @@ def download_file():
                 file.write(dado)
     
     print(f"ARQUIVO BAIXADO COM SUCESSO EM {caminho_salvo}!")
+
+def delete_file():
+    file_name = input("NOME DO ARQUIVO A SER EXCLUIDO: ")
+    resposta = send_msg({"comando": "DELETAR", "arquivo": file_name})
+    print(resposta["mensagem"])
