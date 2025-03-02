@@ -20,7 +20,7 @@ def send_msg(mensagem):
         except json.JSONDecodeError:
             return {"status": "ERROR", "mensagem": "RESPOSTA INVÁLIDA DO SERVIDOR"}
         
-def list_files():
+def list_files(): # não precisa fazer a conexao com o servidor
     resposta  = send_msg({"comando": "LISTAR"})
     if resposta["status"] == "ok":
         print("\nARQUIVOS NO SERVIDOR:")
@@ -36,29 +36,39 @@ def send_file():
         return
     
     else:
-        with open(file_name, "r") as file:
-            content =  file.read()
+       with open(file_name, "rb") as file, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+        client_socket.connect((HOST_SRV, PORT_SRV))
 
-    resposta = send_msg({
-        "comando": "ENVIAR",
-        "arquivo": os.path.basename(file_name),
-        "conteudo": content
-    })
-    print(resposta["mensagem"])
+        client_socket.sendall(json.dumps({
+                "comando": "ENVIAR",
+                "arquivo": os.path.basename(file_name)
+            }).encode())
+        
+        client_socket.recv(1024)
+        while dado := file.read(4069):
+            client_socket.sendall(dado)
+
+        print("ARQUIVO ENVIADO COM SUCESSO!")
 
 def download_file():
     file_name = input("NOME DO ARQUIVO A SER BAIXADO: ")
-    resposta =  send_msg({
-        "comando": "BAIXAR",
-        "arquivo": file_name
-    })
-    if resposta["status"] == "ok":
-        caminho_salvo = os.path.join("downloads", file_name)
-        os.makedirs("downloads", exist_ok=True)
-
-        with open(caminho_salvo, "w") as file:
-            file.write(resposta.get("conteudo", ""))
-
-        print(f"ARQUIVO SALVO NO: {caminho_salvo}")
-    else:
-        print("ERROR:", resposta["mensagem"])
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+        client_socket.connect((HOST_SRV, PORT_SRV)) # estabelece a conexao cliente c o serv
+    # enviando a solicitacao de baixar o arquivo  
+    client_socket.sendall(json.dumps({
+            "comando": "BAIXAR",
+            "arquivo": file_name
+        }).encode())
+    # recebendo o metadata
+    metadado = json.loads(client_socket.recv(1024).decode())
+    if metadado.get("status") != "ok":
+            return print("ERROR:", metadado.get("mensagem"))
+    # se n n tiver pasta para salvar o arquivo cria a pasta
+    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+    caminho_salvo = os.path.join(DOWNLOAD_DIR, file_name)
+    # recebendo o arquivo
+    with open(caminho_salvo, "wb") as file:
+            while dado := client_socket.recv(4069):
+                file.write(dado)
+    
+    print(f"ARQUIVO BAIXADO COM SUCESSO EM {caminho_salvo}!")
