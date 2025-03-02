@@ -4,7 +4,7 @@ import signal
 import sys
 from server.fsep import processar_mensagem
 
-HOST = "127.0.0.1"
+HOST = "0.0.0.0"
 PORT = 8080
 
 servidor_ativo = True
@@ -28,6 +28,7 @@ def cliente_thread(client_socket, addr):
     finally:
         client_socket.close()
         print(f"Fim da conexão com {addr}")
+        print()
 
 def iniciar_servidor():
     
@@ -36,8 +37,10 @@ def iniciar_servidor():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
         server_socket.bind((HOST, PORT))
         server_socket.listen(5)
+        print("=== Servidor FSEP iniciado. ===")
         print(f"Servidor rodando em {HOST}:{PORT}")
         print("Pressione Ctrl+C para encerrar o servidor")
+        print()
         
         server_socket.settimeout(1.0)
         
