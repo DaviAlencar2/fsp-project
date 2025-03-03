@@ -6,6 +6,9 @@ HOST_SRV = "127.0.0.1"
 PORT_SRV = 8080
 BUFFER_SIZE = 4096
 DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), "downloads")
+SEND_DIR = os.path.join(os.path.dirname(__file__), "enviados")
+os.makedirs(SEND_DIR, exist_ok=True)
+os.makedirs(DOWNLOAD_DIR, exist_ok=True) # checando se o diretorio ja existe
 
 def send_msg(mensagem):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
@@ -16,7 +19,7 @@ def send_msg(mensagem):
             return json.loads(resposta)
         except json.JSONDecodeError:
             return {"status": "erro", "mensagem": "Resposta inválida do servidor."}
-        
+
 def list_files():
     resposta = send_msg({"comando": "LISTAR"})
     if resposta["status"] == "ok":
@@ -27,7 +30,7 @@ def list_files():
         print("ERRO:", resposta["mensagem"])
 
 def send_file():
-    file_name = input("DIGITE O CAMINHO DO ARQUIVO A SER ENVIADO: ")
+    file_name = input("Digite o caminho do arquivo a ser enviado: ")
     if not os.path.exists(file_name):
         print("ERRO: ARQUIVO NÃO ENCONTRADO!")
         return
@@ -41,16 +44,26 @@ def send_file():
         if resposta_json.get("status") != "ok":
             print("ERRO:", resposta_json.get("mensagem"))
             return
-
-        while dado := file.read(BUFFER_SIZE):
-            client_socket.sendall(dado)
+        
+        while chunk := file.read(BUFFER_SIZE):
+            client_socket.sendall(chunk)
         client_socket.sendall(b"<EOF>")
         
         resposta_final = client_socket.recv(BUFFER_SIZE).decode()
         print(json.loads(resposta_final).get("mensagem", "Erro desconhecido."))
+        
+        try:
+            destino = os.path.join(SEND_DIR, os.path.basename(file_name))
+            with open(destino, "wb") as saved_file:
+                with open(file_name, "rb") as original_file:
+                    while chunk := original_file.read(BUFFER_SIZE):
+                        saved_file.write(chunk)
+            print(f"Arquivo salvo localmente em: {destino}")
+        except Exception as e:
+            print(f"Erro ao salvar o arquivo localmente: {e}")
 
 def download_file():
-    file_name = input("NOME DO ARQUIVO A SER BAIXADO: ")
+    file_name = input("Nome do arquivo a ser baixado: ")
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         client_socket.connect((HOST_SRV, PORT_SRV))  
         client_socket.sendall(json.dumps({"comando": "BAIXAR", "arquivo": file_name}).encode())
@@ -60,24 +73,21 @@ def download_file():
             print("ERRO:", metadado.get("mensagem"))
             return
         
-        os.makedirs(DOWNLOAD_DIR, exist_ok=True)
         caminho_salvo = os.path.join(DOWNLOAD_DIR, file_name)
         
         with open(caminho_salvo, "wb") as file:
+            dado_total = b""
             while True:
                 dado = client_socket.recv(BUFFER_SIZE)
-                if not dado:
+                if not dado or b"<EOF>" in dado:
+                    dado_total += dado.split(b"<EOF>")[0]  # Garante que o EOF não fique no arquivo
                     break
-                if b"<EOF>" in dado:
-                    partes = dado.split(b"<EOF>", 1)
-                    file.write(partes[0])
-                    break
-                else:
-                    file.write(dado)
+                dado_total += dado
+            file.write(dado_total)
         
-        print(f"ARQUIVO BAIXADO COM SUCESSO EM {caminho_salvo}!")
+        print(f"Arquivo baixado com sucesso em {caminho_salvo}!")
 
 def delete_file():
-    file_name = input("NOME DO ARQUIVO A SER EXCLUÍDO: ")
+    file_name = input("Nome do arquivo a ser excluído: ")
     resposta = send_msg({"comando": "DELETAR", "arquivo": file_name})
     print(resposta["mensagem"])
