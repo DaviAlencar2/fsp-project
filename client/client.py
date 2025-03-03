@@ -1,6 +1,4 @@
-import socket
-import json
-import os
+import socket; import json; import os; import datetime; import csv
 
 HOST_SRV = "127.0.0.1"
 PORT_SRV = 8080
@@ -49,7 +47,7 @@ def send_file():
         
         resposta_final = client_socket.recv(BUFFER_SIZE).decode()
         print(json.loads(resposta_final).get("mensagem", "Erro desconhecido."))
-
+        transfer_log(os.path.basename(file_name)) # colocando log
 def download_file():
     file_name = input("Nome do arquivo a ser baixado: ")
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
@@ -80,3 +78,14 @@ def delete_file():
     file_name = input("Nome do arquivo a ser excluído: ")
     resposta = send_msg({"comando": "DELETAR", "arquivo": file_name})
     print(resposta["mensagem"])
+    transfer_log(os.path.basename(file_name)) # add log
+
+def transfer_log(file_name):
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_dados = [file_name, now]
+    with open("client/log_transferencia.csv", mode="a", newline="") as f:
+        escritor = csv.writer(f)
+        if f.tell() == 0:
+                escritor.writerow(["Nome do Arquivo:", "Data, Hora:"])
+        escritor.writerow(log_dados)
+

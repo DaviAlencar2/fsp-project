@@ -6,7 +6,7 @@
 
 - [X] Melhorar lógica do comando de ENVIAR no `fsep.py`
 
-- [ ] Criar pasta de arquivos enviados no cliente e fazer lógica para armazena-los.
+- [X] Criar pasta de arquivos enviados no cliente e fazer lógica para armazena-los. -> criação d log csv no cliente (criado assim q o codigo for exec) 
 
 - [ ] Considerar usar interface gráfica em caso do usuário quiser criar e enviar o arquivo na hora, e para que ele não tenha que escrever o conteúdo do arquivo no Terminal.
 
