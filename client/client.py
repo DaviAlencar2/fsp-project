@@ -6,8 +6,6 @@ HOST_SRV = "127.0.0.1"
 PORT_SRV = 8080
 BUFFER_SIZE = 4096
 DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), "downloads")
-SEND_DIR = os.path.join(os.path.dirname(__file__), "enviados")
-os.makedirs(SEND_DIR, exist_ok=True)
 os.makedirs(DOWNLOAD_DIR, exist_ok=True) # checando se o diretorio ja existe
 
 def send_msg(mensagem):
@@ -51,16 +49,6 @@ def send_file():
         
         resposta_final = client_socket.recv(BUFFER_SIZE).decode()
         print(json.loads(resposta_final).get("mensagem", "Erro desconhecido."))
-        
-        try:
-            destino = os.path.join(SEND_DIR, os.path.basename(file_name))
-            with open(destino, "wb") as saved_file:
-                with open(file_name, "rb") as original_file:
-                    while chunk := original_file.read(BUFFER_SIZE):
-                        saved_file.write(chunk)
-            print(f"Arquivo salvo localmente em: {destino}")
-        except Exception as e:
-            print(f"Erro ao salvar o arquivo localmente: {e}")
 
 def download_file():
     file_name = input("Nome do arquivo a ser baixado: ")
@@ -76,6 +64,7 @@ def download_file():
         caminho_salvo = os.path.join(DOWNLOAD_DIR, file_name)
         
         with open(caminho_salvo, "wb") as file:
+            # b"" em python == str no formato bytes
             dado_total = b""
             while True:
                 dado = client_socket.recv(BUFFER_SIZE)
