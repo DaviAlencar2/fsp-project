@@ -2,18 +2,20 @@ import socket
 import threading
 import signal
 import sys
-from server.fsep import processar_mensagem
+from server.fsp import processar_mensagem
 
 HOST = "0.0.0.0"
 PORT = 8080
 
 servidor_ativo = True
 
+
 def encerrar_servidor(sig, frame):
     """Manipulador para o sinal de Ctrl+C"""
     global servidor_ativo
     print("\nEncerrando o servidor...")
     servidor_ativo = False
+
 
 def cliente_thread(client_socket, addr):
     print(f"Conexão recebida de {addr}")
@@ -29,6 +31,7 @@ def cliente_thread(client_socket, addr):
         client_socket.close()
         print(f"Fim da conexão com {addr}")
         print()
+
 
 def iniciar_servidor():
     signal.signal(signal.SIGINT, encerrar_servidor)
@@ -54,6 +57,7 @@ def iniciar_servidor():
                 break
         
         print("Servidor encerrado.")
+
 
 if __name__ == "__main__":
     iniciar_servidor()
