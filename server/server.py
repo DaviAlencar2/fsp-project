@@ -31,7 +31,6 @@ def cliente_thread(client_socket, addr):
         print()
 
 def iniciar_servidor():
-    
     signal.signal(signal.SIGINT, encerrar_servidor)
     
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:

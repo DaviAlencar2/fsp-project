@@ -69,6 +69,8 @@ def processar_mensagem(mensagem, client_socket):
                 with arquivo_lock:
                     if not os.path.exists(data_arquivo):
                         resposta = {"status":"erro", "mensagem":"Arquivo não encontrado."}
+                        client_socket.sendall(json.dumps(resposta).encode())
+                        return
 
                     else:
                         resposta_inicial = {"status":"ok", "mensagem":"iniciando download"}

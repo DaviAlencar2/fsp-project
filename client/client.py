@@ -2,7 +2,7 @@ import socket; import json; import os; import datetime; import csv
 from tkinter import filedialog
 
 
-HOST_SRV = "192.168.0.6" #meu notebook linux
+HOST_SRV = "192.168.0.5" # mudar para o IP do servidor
 PORT_SRV = 8080
 BUFFER_SIZE = 4096
 DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), "downloads")
@@ -53,11 +53,12 @@ def send_file():
         resposta_final = client_socket.recv(BUFFER_SIZE).decode()
         print(json.loads(resposta_final).get("mensagem", "Erro desconhecido."))
         if resposta["status"] == "ok": # tentativa de solucionar erro do log (se a operação tiver ok)
-            transfer_log(os.path.basename(file_name))transfer_log(os.path.basename(file_name)) # colocando log
+            transfer_log(os.path.basename(file_name))# colocando log
 
 
 def download_file():
     file_name = input("Nome do arquivo a ser baixado: ")
+    
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         client_socket.connect((HOST_SRV, PORT_SRV))  
         client_socket.sendall(json.dumps({"comando": "BAIXAR", "arquivo": file_name}).encode())
