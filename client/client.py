@@ -52,7 +52,8 @@ def send_file():
         
         resposta_final = client_socket.recv(BUFFER_SIZE).decode()
         print(json.loads(resposta_final).get("mensagem", "Erro desconhecido."))
-        transfer_log(os.path.basename(file_name)) # colocando log
+        if resposta["status"] == "ok": # tentativa de solucionar erro do log (se a operação tiver ok)
+            transfer_log(os.path.basename(file_name))transfer_log(os.path.basename(file_name)) # colocando log
 
 
 def download_file():
@@ -86,7 +87,8 @@ def delete_file():
     file_name = input("Nome do arquivo a ser excluído: ")
     resposta = send_msg({"comando": "DELETAR", "arquivo": file_name})
     print(resposta["mensagem"])
-    transfer_log(os.path.basename(file_name)) # add log
+    if resposta["status"] == "ok": # tentativa de solucionar erro do log
+            transfer_log(os.path.basename(file_name))
 
 
 def transfer_log(file_name):
