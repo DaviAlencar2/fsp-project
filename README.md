@@ -1,4 +1,4 @@
-# FSP - Sistema de Compartilhamento de Arquivos
+# 📂 FSP - Sistema de Compartilhamento de Arquivos
 
 ## Autores
 - [Davi Leite] - [davi.leite@academico.ifpb.edu.br]
