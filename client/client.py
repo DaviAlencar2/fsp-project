@@ -1,10 +1,13 @@
 import socket; import json; import os; import datetime; import csv
+from tkinter import filedialog
 
-HOST_SRV = "127.0.0.1"
+
+HOST_SRV = "192.168.0.6" #meu notebook linux
 PORT_SRV = 8080
 BUFFER_SIZE = 4096
 DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), "downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True) # checando se o diretorio ja existe
+
 
 def send_msg(mensagem):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
@@ -16,6 +19,7 @@ def send_msg(mensagem):
         except json.JSONDecodeError:
             return {"status": "erro", "mensagem": "Resposta inválida do servidor."}
 
+
 def list_files():
     resposta = send_msg({"comando": "LISTAR"})
     if resposta["status"] == "ok":
@@ -25,8 +29,9 @@ def list_files():
     else:
         print("ERRO:", resposta["mensagem"])
 
+
 def send_file():
-    file_name = input("Digite o caminho do arquivo a ser enviado: ")
+    file_name = filedialog.askopenfilename()
     if not os.path.exists(file_name):
         print("ERRO: ARQUIVO NÃO ENCONTRADO!")
         return
@@ -48,6 +53,8 @@ def send_file():
         resposta_final = client_socket.recv(BUFFER_SIZE).decode()
         print(json.loads(resposta_final).get("mensagem", "Erro desconhecido."))
         transfer_log(os.path.basename(file_name)) # colocando log
+
+
 def download_file():
     file_name = input("Nome do arquivo a ser baixado: ")
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
@@ -74,11 +81,13 @@ def download_file():
         
         print(f"Arquivo baixado com sucesso em {caminho_salvo}!")
 
+
 def delete_file():
     file_name = input("Nome do arquivo a ser excluído: ")
     resposta = send_msg({"comando": "DELETAR", "arquivo": file_name})
     print(resposta["mensagem"])
     transfer_log(os.path.basename(file_name)) # add log
+
 
 def transfer_log(file_name):
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -88,6 +97,7 @@ def transfer_log(file_name):
         if f.tell() == 0:
                 escritor.writerow(["Nome do Arquivo:", "Data, Hora:"])
         escritor.writerow(log_dados)
+
 
 def main():
     print("==== Cliente FSEP ====")
@@ -114,6 +124,7 @@ def main():
             break
         else:
             print("Opção inválida!")
+
 
 if __name__ == "__main__":
     main()
