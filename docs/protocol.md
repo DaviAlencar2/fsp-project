@@ -1,14 +1,12 @@
-## FSEP Protocol
+## Visão Geral
 
-O protocolo FSEP é utilizado para comunicação entre um cliente e um servidor para manipulação de arquivos. A comunicação é feita através de mensagens JSON.
+O protocolo FSP é um protocolo simples baseado em JSON para transferência de arquivos entre cliente e servidor. Ele define comandos para listar, enviar, baixar e excluir arquivos, com suporte para transferência de dados binários.
 
-A mensagem enviada pelo cliente deve estar no formato JSON com a seguinte estrutura:
+## Características do Protocolo
 
-```json
-{
-    "comando": "COMANDO",
-    "arquivo": "NOME_ARQUIVO",
-    "conteudo": "CONTEUDO"
-}
-```
-Observação: "conteudo" só é necessário no comando "enviar".
+- Baseado em TCP para garantir entrega confiável dos dados
+- Mensagens de controle codificadas em JSON
+- Suporte para transferência de arquivos binários
+- Marcador de fim de arquivo (`<EOF>`) para delimitar transferências binárias
+
+## Formato das Mensagens

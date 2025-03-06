@@ -89,3 +89,31 @@ def transfer_log(file_name):
                 escritor.writerow(["Nome do Arquivo:", "Data, Hora:"])
         escritor.writerow(log_dados)
 
+def main():
+    print("==== Cliente FSEP ====")
+    while True:
+        print("\nEscolha uma opção:")
+        print("1 - Listar arquivos")
+        print("2 - Enviar arquivo")
+        print("3 - Baixar arquivo")
+        print("4 - Excluir arquivo")
+        print("0 - Sair")
+        
+        opcao = input("Opção: ")
+        
+        if opcao == "1":
+            list_files()
+        elif opcao == "2":
+            send_file()
+        elif opcao == "3":
+            download_file()
+        elif opcao == "4":
+            delete_file()
+        elif opcao == "0":
+            print("Encerrando cliente...")
+            break
+        else:
+            print("Opção inválida!")
+
+if __name__ == "__main__":
+    main()
