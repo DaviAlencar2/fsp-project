@@ -1,4 +1,3 @@
-
 ok_dict = {
     40: "Iniciando transferencia",
     41: "Arquivo enviado com sucesso.",

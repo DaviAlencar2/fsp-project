@@ -8,6 +8,7 @@ from status.clientError import error_dict
 from status.clienteOK import ok_dict
 
 
+
 HOST_SRV = "192.168.0.4"
 PORT_SRV = 8080
 BUFFER_SIZE = 4096

@@ -3,8 +3,8 @@ import json
 import threading
 import time
 from server.utils import handle_duplicate_files
-from status.serverError import error_dict
-from status.serverOk import ok_dict
+from status.protocolError import error_dict
+from status.protocolOk import ok_dict
 
 HOST = "0.0.0.0"
 PORT = 8080
@@ -14,7 +14,7 @@ BUFFER_SIZE = 4096
 arquivo_lock = threading.Lock()
 
 
-def processar_mensagem(mensagem, client_socket):
+def processar_mensagem(mensagem:json, client_socket):
     try:
         dados = json.loads(mensagem)
 
