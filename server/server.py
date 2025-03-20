@@ -7,7 +7,7 @@ from status.protocolError import error_dict
 from status.protocolOk import ok_dict
 
 HOST = "0.0.0.0"
-PORT = 8080
+PORT = int(sys.argsv[1])
 
 servidor_ativo = True
 
