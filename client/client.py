@@ -88,17 +88,17 @@ def send_file():
 
 def download_file():
     file_name = input("Nome do arquivo a ser baixado: ")
-    resposta = send_msg({"comando": "BAIXAR", "arquivo": file_name})
-
-    if not resposta["stt"].startswith("ok"):
-        display_status_msg(resposta)
-        return
 
     caminho_salvo = os.path.join(DOWNLOAD_DIR, file_name)
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket, open(caminho_salvo, "wb") as file:
         client_socket.connect((HOST_SRV, PORT_SRV))
         client_socket.sendall(json.dumps({"comando": "BAIXAR", "arquivo": file_name}).encode())
 
+        reposta_inicial = json.loads(client_socket.recv(BUFFER_SIZE).decode())
+        if not reposta_inicial["stt"].startswith("ok"):
+            display_status_msg(reposta_inicial)
+            return
+        
         while (data := client_socket.recv(BUFFER_SIZE)):
             if b"<EOF>" in data:
                 file.write(data.split(b"<EOF>")[0])
