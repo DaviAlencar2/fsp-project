@@ -7,6 +7,7 @@ from status.serverError import error_dict
 from status.serverOk import ok_dict
 
 DATA_FILES_DIR = os.path.join(os.path.dirname(__file__), "data/files")
+os.makedirs(DATA_FILES_DIR, exist_ok=True)
 BUFFER_SIZE = 4096
 arquivo_lock = threading.Lock()
 

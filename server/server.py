@@ -3,6 +3,8 @@ import threading
 import signal
 import sys
 from server.fsp import processar_mensagem
+from status.serverError import error_dict
+from status.serverOk import ok_dict
 
 HOST = "0.0.0.0"
 PORT = 8080
