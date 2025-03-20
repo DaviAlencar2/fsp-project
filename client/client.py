@@ -6,6 +6,7 @@ import time
 from tkinter import filedialog
 from status.protocolError import error_dict
 from status.protocolOk import ok_dict
+from client.utils import handle_duplicate_files
 
 
 HOST_SRV = sys.argv[1]
@@ -136,6 +137,7 @@ def send_file():
                 # Arquivo com mesmo nome já existe
                 print(f"Arquivo '{nome_arquivo}' já existe no servidor.")
                 print("O servidor vai gerar um nome único para este arquivo.")
+                nome_arquivo = handle_duplicate_files(nome_arquivo,resposta_listar["files"])
         
         with open(file_path, "rb") as file, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             client_socket.connect((HOST_SRV, PORT_SRV))
@@ -179,7 +181,7 @@ def send_file():
         print(f"err 11: {error_dict[11]}")
         print(f"Detalhes: {str(e)}")
 
-        
+
 def delete_file():
     try:
         file_name = input("Nome do arquivo a ser excluído: ")
