@@ -8,7 +8,7 @@ from status.protocolOk import ok_dict
 
 
 HOST_SRV = sys.argv[1]
-PORT_SRV = sys.argv[2]
+PORT_SRV = int(sys.argv[2]) # Porta Padrão esperada: 8080
 BUFFER_SIZE = 4096
 DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), "downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
