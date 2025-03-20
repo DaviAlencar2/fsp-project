@@ -7,7 +7,7 @@ from tkinter import filedialog
 from status.clientError import error_dict
 from status.clienteOK import ok_dict
 
-HOST_SRV = "192.168.0.5"
+HOST_SRV = "192.168.0.4"
 PORT_SRV = 8080
 BUFFER_SIZE = 4096
 DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), "downloads")
@@ -18,9 +18,9 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 def processar_mensagem(resposta):
     codigo = int(resposta.get("stt", "err 55").split()[1]) if "stt" in resposta else 55 # erro desconhecido
     if resposta["stt"].startswith("ok"):
-        print(f"ok {codigo}: {ok_dict.get(codigo, 'Mensagem de sucesso desconhecida')}")
+        print (f"ok {codigo}: {ok_dict.get(codigo, 'Mensagem de sucesso desconhecida')}")
     else:
-        print(f"err {codigo}: {error_dict.get(codigo, 'Erro desconhecido')}")
+        print (f"err {codigo}: {error_dict.get(codigo, 'Erro desconhecido')}")
 
 
 def send_msg(mensagem):
@@ -37,7 +37,7 @@ def list_files():
     resposta = send_msg({"comando": "LISTAR"})
     if resposta["stt"].startswith("ok"):
         print("\nARQUIVOS NO SERVIDOR:")
-        for file in resposta.get("arquivos", []):
+        for file in resposta.get("files", []):
             print(f" - {file}")
     processar_mensagem(resposta)
 
@@ -52,9 +52,9 @@ def send_file():
         client_socket.connect((HOST_SRV, PORT_SRV))
         client_socket.sendall(json.dumps({"comando": "ENVIAR", "arquivo": os.path.basename(file_name)}).encode())
 
-        if not send_msg({"comando": "ENVIAR", "arquivo": os.path.basename(file_name)})["stt"].startswith("ok"):
-            print(f"err 55: {error_dict[55]}")  # erro desconhecido
-            return
+        # if not send_msg({"comando": "ENVIAR", "arquivo": os.path.basename(file_name)})["stt"].startswith("ok"):
+        #     print(f"err 55: {error_dict[55]}")  # erro desconhecido
+        #     return
 
         while chunk := file.read(BUFFER_SIZE):
             client_socket.sendall(chunk)
