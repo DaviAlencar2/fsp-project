@@ -17,7 +17,7 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 
 def processar_mensagem(resposta):
-    codigo = int(resposta.get("stt", "err 55").split()[1]) if "stt" in resposta else 55 # erro desconhecido
+    codigo = int(resposta.get("stt", "err 22").split()[1]) if "stt" in resposta else 22 # erro desconhecido
     if resposta["stt"].startswith("ok"):
         print (f"ok {codigo}: {ok_dict.get(codigo, 'Mensagem de sucesso desconhecida')}")
     else:
@@ -83,7 +83,7 @@ def download_file():
                 break
             file.write(data)
 
-    print(f"ok 61: {ok_dict[61]}")  # Arquivo baixado com sucesso
+    print(f"ok 46: {ok_dict[46]}")  # Arquivo baixado com sucesso
 
 
 def delete_file():
@@ -115,7 +115,7 @@ def main():
             print("Encerrando cliente...")
             break
         else:
-            print("Opção inválida!")
+            print("err 21: " + error_dict[21])  # comando inválido
 
 
 if __name__ == "__main__":
