@@ -56,7 +56,7 @@ def processar_mensagem(mensagem:json, client_socket):
                                 bytes_recebidos += len(dados)
 
                               
-                    resposta_final = {"stt" : "ok 41", "msg" : ok_dict[41]}
+                    resposta_final = {"stt" : "ok 41", "msg" : ok_dict[41],"name":os.path.basename(data_arquivo)}
                     client_socket.sendall(json.dumps(resposta_final).encode())
 
                     return

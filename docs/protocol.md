@@ -19,7 +19,8 @@ As mensagens do protocolo FSP são codificadas em formato JSON, o que permite um
 ```json
 {
     "comando": "COMANDO",
-    "arquivo": "nome_do_arquivo"  // Opcional, dependendo do comando
+    "arquivo": "nome_do_arquivo" , // Opcional, dependendo do comando
+    "tamanho": "xxxxx"          // Opcional, usado em transferencias
 }
 ```
 
@@ -27,9 +28,11 @@ As mensagens do protocolo FSP são codificadas em formato JSON, o que permite um
 
 ```json
 {
-    "stt": "tipo código",  // Ex: "ok 45" ou "err 14"
+    "stt": "tipo código",    // Ex: "ok 45" ou "err 14"
     "msg": "Descrição do status",
-    "files": [...]         // Opcional, presente apenas em respostas de listagem
+    "files": [...],          // Opcional, presente apenas em respostas de listagem
+    "tamanho": 12345,        // Opcional, presente em respostas de download
+    "arquivo": "nome_final"  // Opcional, presente quando nome é alterado no servidor
 }
 ```
 
@@ -62,8 +65,11 @@ Upload de um arquivo para o servidor.
 **Requisição:**
 ```json
 {
+    {
     "comando": "ENVIAR",
-    "arquivo": "nome_do_arquivo.ext"
+    "arquivo": "nome_do_arquivo.ext",
+    "tamanho": 12345  // Tamanho do arquivo em bytes
+}
 }
 ```
 
@@ -81,7 +87,8 @@ Após esta resposta, o cliente começa a enviar o conteúdo do arquivo em blocos
 ```json
 {
     "stt": "ok 41", 
-    "msg": "Arquivo enviado com sucesso."
+    "msg": "Arquivo enviado com sucesso.",
+    "name": "nome_do_arquivo"
 }
 ```
 
@@ -101,7 +108,8 @@ Download de um arquivo do servidor.
 ```json
 {
     "stt": "ok 44",
-    "msg": "Iniciando download."
+    "msg": "Iniciando download.",
+    "tamanho": 12345  // Tamanho do arquivo em bytes
 }
 ```
 
@@ -137,7 +145,7 @@ Exclui um arquivo do servidor.
 
 ## Códigos de Status
 
-### Códigos de Sucesso (40-49)
+### Códigos de Sucesso (40,80)
 
 | Código | Mensagem | Descrição |
 |--------|----------|-----------|
@@ -148,8 +156,11 @@ Exclui um arquivo do servidor.
 | 44 | Iniciando download | Sinaliza que o servidor está pronto para enviar o arquivo |
 | 45 | Arquivos listados com sucesso | A listagem foi realizada com sucesso |
 | 46 | Arquivo baixado com sucesso | O arquivo foi transferido do servidor para o cliente com sucesso |
+| 47 | Servidor não tem arquivos para listar | A pasta do servidor está vazia |
+| 48 | Operação concluída | Uma operação no cliente foi concluída com sucesso |
+| 49 | Conexão estabelecida com o servidor | O cliente estabeleceu conexão com o servidor |
 
-### Códigos de Erro (10-39)
+### Códigos de Erro (10,20,50)
 
 | Código | Mensagem | Descrição |
 |--------|----------|-----------|
@@ -161,6 +172,14 @@ Exclui um arquivo do servidor.
 | 22 | Formato de Mensagem Inválido | A mensagem JSON está malformada ou tem campos inválidos |
 | 30 | Erro no servidor | Problema interno no servidor |
 | 31 | Erro ao processar mensagem | O servidor não conseguiu processar a requisição |
+| 50 | Operação cancelada pelo usuário | O usuário cancelou uma operação em andamento |
+| 51 | Não foi possível conectar ao servidor | Falha na tentativa de estabelecer conexão com o servidor |
+| 52 | Sem permissão para acessar o arquivo | O cliente não tem permissão para acessar um arquivo local |
+| 53 | Arquivo não encontrado localmente | O arquivo solicitado não existe na máquina do cliente |
+| 54 | Erro de I/O ao manipular o arquivo | Erro de entrada/saída ao ler ou escrever um arquivo |
+| 55 | Timeout na conexão | A conexão expirou durante uma operação |
+| 56 | Resposta inválida do servidor | A resposta do servidor está em formato incorreto |
+| 57 | Marcador de fim de arquivo não encontrado | O marcador EOF não foi encontrado durante uma transferência |
 
 ## Tratamento de Arquivos Duplicados
 
@@ -174,7 +193,13 @@ Quando um cliente tenta enviar um arquivo com um nome que já existe no servidor
 
 A transferência de arquivos é realizada em blocos de até 4096 bytes para otimizar o uso de memória.
 
-O final da transferência é marcado pelo envio da sequência `<EOF>` pelo lado que está transmitindo o arquivo (cliente no caso de upload, servidor no caso de download).
+### Método Principal: Transferência Baseada em Tamanho
+
+O protocolo utiliza o tamanho do arquivo para controlar a transferência:
+
+1. O lado que envia o arquivo informa seu tamanho em bytes antes da transferência
+2. O lado que recebe monitora a quantidade de bytes recebidos
+3. A transferência é considerada concluída quando todos os bytes foram recebido
 
 ## Concorrência e Segurança
 

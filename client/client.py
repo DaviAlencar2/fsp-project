@@ -169,7 +169,7 @@ def send_file():
             resposta_final = json.loads(client_socket.recv(BUFFER_SIZE).decode())
             
             # Extrair o nome que o servidor usou para o arquivo (se foi alterado)
-            if "arquivo" in resposta_final:
+            if "name" in resposta_final:
                 nome_salvo = resposta_final["arquivo"]
                 print(f"Arquivo salvo no servidor como: {nome_salvo}")
             

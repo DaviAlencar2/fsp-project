@@ -46,12 +46,12 @@ Não é necessário instalar pacotes adicionais.
 
 ```bash
 # Na pasta raiz do projeto
-python -m server.server
+python -m server.server 0.0.0.0 8080
 ```
 
 ### 1. Iniciando o Servidor
 
 ```bash
 # Na pasta raiz do projeto
-python -m client.client
+python -m client.client ip_servidor 8080
 ```
