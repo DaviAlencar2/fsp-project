@@ -115,33 +115,60 @@ def list_files():
 
 
 def send_file():
+    """Envia um arquivo para o servidor com tratamento de duplicação"""
     file_path = filedialog.askopenfilename()
     if not file_path:  # Usuário cancelou a seleção
         print("Operação de envio cancelada.")
         return
         
     if not os.path.exists(file_path):
-        print(f"err 14: {error_dict[14]}")  # arquivo não encontrado
+        print(f"err 53: {error_dict[53]}")  # arquivo não encontrado localmente
         return
 
     try:
+        # Primeiro verifica se o arquivo já existe no servidor
+        nome_arquivo = os.path.basename(file_path)
+        resposta_listar = send_msg({"comando": "LISTAR"})
+        
+        if resposta_listar["stt"].startswith("ok") and "files" in resposta_listar:
+            arquivos_servidor = resposta_listar.get("files", [])
+            if nome_arquivo in arquivos_servidor:
+                # Arquivo com mesmo nome já existe
+                print(f"Arquivo '{nome_arquivo}' já existe no servidor.")
+                print("O servidor vai gerar um nome único para este arquivo.")
+        
         with open(file_path, "rb") as file, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             client_socket.connect((HOST_SRV, PORT_SRV))
-            client_socket.sendall(json.dumps({"comando": "ENVIAR", "arquivo": os.path.basename(file_path)}).encode())
+            client_socket.sendall(json.dumps({"comando": "ENVIAR", "arquivo": nome_arquivo}).encode())
             
             # Receber resposta inicial do servidor
             resposta_inicial = json.loads(client_socket.recv(BUFFER_SIZE).decode())
             if not resposta_inicial["stt"].startswith("ok"):
                 display_status_msg(resposta_inicial)
                 return
-                
-            # Enviar conteúdo do arquivo
+            
+            # Enviar conteúdo do arquivo com barra de progresso
+            print(f"Enviando arquivo '{nome_arquivo}'...")
+            tamanho_arquivo = os.path.getsize(file_path)
+            enviado_total = 0
+            
             while chunk := file.read(BUFFER_SIZE):
                 client_socket.sendall(chunk)
+                enviado_total += len(chunk)
+                progresso = (enviado_total / tamanho_arquivo) * 100
+                print(f"\rProgresso: {progresso:.1f}%", end="")
+                
             client_socket.sendall(b"<EOF>")
+            print()  # Nova linha após a barra de progresso
             
             # Receber resposta final
             resposta_final = json.loads(client_socket.recv(BUFFER_SIZE).decode())
+            
+            # Extrair o nome que o servidor usou para o arquivo (se foi alterado)
+            if "arquivo" in resposta_final:
+                nome_salvo = resposta_final["arquivo"]
+                print(f"Arquivo salvo no servidor como: {nome_salvo}")
+            
             display_status_msg(resposta_final)
     
     except ConnectionRefusedError:
@@ -152,6 +179,7 @@ def send_file():
         print(f"err 11: {error_dict[11]}")
         print(f"Detalhes: {str(e)}")
 
+        
 def delete_file():
     try:
         file_name = input("Nome do arquivo a ser excluído: ")
