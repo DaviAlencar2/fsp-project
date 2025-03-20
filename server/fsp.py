@@ -6,10 +6,12 @@ from server.utils import handle_duplicate_files
 from status.serverError import error_dict
 from status.serverOk import ok_dict
 
+
 DATA_FILES_DIR = os.path.join(os.path.dirname(__file__), "data/files")
 os.makedirs(DATA_FILES_DIR, exist_ok=True)
 BUFFER_SIZE = 4096
 arquivo_lock = threading.Lock()
+
 
 def processar_mensagem(mensagem, client_socket):
     try:
@@ -17,7 +19,7 @@ def processar_mensagem(mensagem, client_socket):
 
         if dados["comando"] == "LISTAR":
             arquivos = os.listdir(DATA_FILES_DIR)
-            resposta = {"stt" : "ok 45", "msg" : ok_dict[45]}
+            resposta = {"stt" : "ok 45", "msg" : ok_dict[45], "files": arquivos}
         
         elif dados["comando"] == "ENVIAR": # usuario enviando arquivo ao servidor
             nome_arquivo = dados["arquivo"]
@@ -28,6 +30,7 @@ def processar_mensagem(mensagem, client_socket):
                     if os.path.exists(data_arquivo):
                         novo_nome = handle_duplicate_files(nome_arquivo,data_arquivo)
                         data_arquivo = os.path.join(DATA_FILES_DIR, os.path.basename(novo_nome))
+                        
                     resposta_inicial = {"stt" : "ok 41", "msg" : ok_dict[41]}
                     client_socket.sendall(json.dumps(resposta_inicial).encode())
 
@@ -43,9 +46,10 @@ def processar_mensagem(mensagem, client_socket):
                                 break
                             else:
                                 arquivo.write(dados)
-                    resposta_final = {"status" : "ok 42", "msg" : ok_dict[42]}
+                    resposta_final = {"stt" : "ok 42", "msg" : ok_dict[42]}
                     client_socket.sendall(json.dumps(resposta_final).encode())
                     return
+                
             except:
                 resposta = {"stt" : "err 11", "msg" : error_dict[11]}
 
@@ -68,6 +72,7 @@ def processar_mensagem(mensagem, client_socket):
         elif dados["comando"] == "BAIXAR": # usuario baixando arquivo do servidor
             nome_arquivo = dados["arquivo"]
             data_arquivo = os.path.join(DATA_FILES_DIR, os.path.basename(nome_arquivo))
+
             try:
                 with arquivo_lock:
                     if not os.path.exists(data_arquivo):
@@ -89,11 +94,13 @@ def processar_mensagem(mensagem, client_socket):
                                 client_socket.sendall(dados)
                         client_socket.sendall(b"<EOF>")
                 return
+            
             except:
                 resposta = {"stt" : "err 12", "msg" : error_dict[12]}
 
         else:
             resposta = {"stt" : "err 21", "msg" : error_dict[21]}
+
     except json.JSONDecodeError:
         resposta = {"stt" : "err 22", "msg" : error_dict[22]}
 

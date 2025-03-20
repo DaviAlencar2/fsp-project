@@ -28,6 +28,8 @@ O sistema foi projetado para ser simples, eficiente e capaz de lidar com arquivo
 | **server/utils.py** | Funções utilitárias, como tratamento de arquivos duplicados |
 | **server/data/files/** | Diretório onde os arquivos são armazenados no servidor |
 | **docs/protocol.md** | Documentação do protocolo de comunicação FSP |
+| **status/serverError.py** | Dicionário de erros para o protocolo FSP |
+| **status/serverOk.py** | Dicionário de status OK para o protocolo FSP |
 
 ## Pré-requisitos para Execução
 
