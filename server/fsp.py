@@ -2,12 +2,15 @@ import os
 import json
 import threading
 import time
+import sys
 from server.utils import handle_duplicate_files
 from status.protocolError import error_dict
 from status.protocolOk import ok_dict
 
-HOST = "0.0.0.0"
-PORT = 8080
+
+HOST = sys.argv[1]
+PORT = int(sys.argv[2])
+
 DATA_FILES_DIR = os.path.join(os.path.dirname(__file__), "data/files")
 os.makedirs(DATA_FILES_DIR, exist_ok=True)
 BUFFER_SIZE = 4096
@@ -22,7 +25,7 @@ def processar_mensagem(mensagem:json, client_socket):
             arquivos = os.listdir(DATA_FILES_DIR)
             resposta = {"stt" : "ok 45", "msg" : ok_dict[45], "files": arquivos}
         
-        elif dados["comando"] == "ENVIAR": # usuario enviando arquivo ao servidor
+        elif dados["comando"] == "ENVIAR": # Usuario enviando arquivo ao servidor.
             nome_arquivo = dados["arquivo"]
             data_arquivo = os.path.join(DATA_FILES_DIR, os.path.basename(nome_arquivo))
 
@@ -38,6 +41,7 @@ def processar_mensagem(mensagem:json, client_socket):
                     with open(data_arquivo,"wb") as arquivo:
                         while True:
                             dados = client_socket.recv(BUFFER_SIZE)
+
                             if not dados:
                                 break
                            
@@ -45,17 +49,20 @@ def processar_mensagem(mensagem:json, client_socket):
                                 partes = dados.split(b"<EOF>", 1)
                                 arquivo.write(partes[0])  
                                 break
+
                             else:
                                 arquivo.write(dados)
-                    resposta_final = {"stt" : "ok 42", "msg" : ok_dict[42]} # arquivo recebido com sucesso pois o cliente que enviou o arquivo
+
+                    resposta_final = {"stt" : "ok 41", "msg" : ok_dict[42]}
                     client_socket.sendall(json.dumps(resposta_final).encode())
+
                     return
                 
             except:
                 resposta = {"stt" : "err 11", "msg" : error_dict[11]}
 
 
-        elif dados["comando"] == "DELETAR": # usuario deletando arquivo do servidor
+        elif dados["comando"] == "DELETAR": # Usuario deletando arquivo do servidor.
             nome_arquivo = dados["arquivo"]
             data_arquivo = os.path.join(DATA_FILES_DIR, os.path.basename(nome_arquivo))
 
@@ -70,7 +77,7 @@ def processar_mensagem(mensagem:json, client_socket):
                 resposta = {"stt" : "erro 13", "msg" : error_dict[13]}
 
 
-        elif dados["comando"] == "BAIXAR": # usuario baixando arquivo do servidor
+        elif dados["comando"] == "BAIXAR": # usuario baixando arquivo do servidor.
             nome_arquivo = dados["arquivo"]
             data_arquivo = os.path.join(DATA_FILES_DIR, os.path.basename(nome_arquivo))
 
@@ -82,7 +89,7 @@ def processar_mensagem(mensagem:json, client_socket):
                         return
 
                     else:
-                        resposta_inicial = {"stt" : "ok 44", "msg" : ok_dict[44]}
+                        resposta_inicial = {"stt" : "ok 40", "msg" : ok_dict[44]}
                         client_socket.sendall(json.dumps(resposta_inicial).encode())
 
                         time.sleep(0.2)
@@ -94,7 +101,11 @@ def processar_mensagem(mensagem:json, client_socket):
                                     break
                                 client_socket.sendall(dados)
                         client_socket.sendall(b"<EOF>")
-                return
+
+                        resposta_final = {"stt" : "ok 46", "msg" : ok_dict[46]}
+                        client_socket.sendall(json.dumps(resposta_final).encode())
+
+                        return
             
             except:
                 resposta = {"stt" : "err 12", "msg" : error_dict[12]}

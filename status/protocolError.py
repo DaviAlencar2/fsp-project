@@ -1,5 +1,6 @@
 '''
 Erros que começam com 1 vão ser erros de comandos e os que começam em 2 erros de processamento da mensagem
+e os que começam em 3 erros no servidor.
 '''
 
 error_dict = {
