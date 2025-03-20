@@ -90,7 +90,7 @@ def download_file():
                 break
             file.write(data)
 
-    print(f"ok 46: {ok_dict[46]}")  # Arquivo baixado com sucesso
+    display_status_msg({"stt": "ok 46", "msg": ok_dict[46]})
 
 
 def delete_file():
