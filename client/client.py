@@ -4,8 +4,8 @@ import os
 import datetime
 import csv
 from tkinter import filedialog
-from status.clientError import error_dict
-from status.clienteOK import ok_dict
+from status.protocolError import error_dict
+from status.protocolOk import ok_dict
 
 
 
@@ -31,7 +31,7 @@ def send_msg(mensagem):
         try:
             return json.loads(client_socket.recv(BUFFER_SIZE).decode())
         except json.JSONDecodeError:
-            return {"stt": "err 56", "msg": error_dict[56]}  # resposta inválida do servidor
+            return {"stt": "err 22", "msg": error_dict[22]}  # resposta inválida do servidor
 
 
 def list_files():
@@ -46,7 +46,7 @@ def list_files():
 def send_file():
     file_name = filedialog.askopenfilename()
     if not os.path.exists(file_name):
-        print(f"err 51: {error_dict[51]}")  # arquivo não encontrado
+        print(f"err 14: {error_dict[14]}")  # arquivo não encontrado
         return
 
     with open(file_name, "rb") as file, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
