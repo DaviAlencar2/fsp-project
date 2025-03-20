@@ -5,5 +5,6 @@ ok_dict = {
     43: "Arquivo deletado com sucesso.",
     44: "Iniciando download.",
     45: "Arquivos listados com sucesso.",
-    46: "Arquivo baixado com sucesso."
+    46: "Arquivo baixado com sucesso.",
+    47: "Servidor não tem arquivos para listar."
 }

@@ -23,7 +23,10 @@ def processar_mensagem(mensagem:json, client_socket):
 
         if dados["comando"] == "LISTAR":
             arquivos = os.listdir(DATA_FILES_DIR)
-            resposta = {"stt" : "ok 45", "msg" : ok_dict[45], "files": arquivos}
+            if len(arquivos) == 0:
+                resposta = {"stt" : "ok 47", "msg" : ok_dict[42]}
+            else:
+                resposta = {"stt" : "ok 45", "msg" : ok_dict[45], "files": arquivos}
         
         elif dados["comando"] == "ENVIAR": # Usuario enviando arquivo ao servidor.
             nome_arquivo = dados["arquivo"]
