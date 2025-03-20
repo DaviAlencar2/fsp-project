@@ -8,5 +8,7 @@ error_dict = {
     13:"Erro ao deletar o arquivo",
     14:"Arquivo não encontrado no servidor",
     21:"Comando Inválido",
-    22:"Formato de Mensagem Inválido"
+    22:"Formato de Mensagem Inválido",
+    30:"Erro no servidor",
+    31:"Erro ao processar mensagem",
 }

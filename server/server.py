@@ -28,7 +28,7 @@ def cliente_thread(client_socket, addr):
                 break
             processar_mensagem(mensagem, client_socket)
     except Exception as e:
-        print(f"Erro ao processar mensagem de {addr}: {e}")
+        print(f"Err 31: {error_dict[31]}")
     finally:
         client_socket.close()
         print(f"Fim da conexão com {addr}")
@@ -55,7 +55,7 @@ def iniciar_servidor():
             except socket.timeout:
                 continue
             except Exception as e:
-                print(f"Erro no servidor: {e}")
+                print(f"Err 30: {error_dict[30]}")
                 break
         
         print("Servidor encerrado.")

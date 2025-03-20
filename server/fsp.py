@@ -32,7 +32,7 @@ def processar_mensagem(mensagem:json, client_socket):
                         novo_nome = handle_duplicate_files(nome_arquivo,data_arquivo)
                         data_arquivo = os.path.join(DATA_FILES_DIR, os.path.basename(novo_nome))
                         
-                    resposta_inicial = {"stt" : "ok 41", "msg" : ok_dict[41]}
+                    resposta_inicial = {"stt" : "ok 40", "msg" : ok_dict[40]}
                     client_socket.sendall(json.dumps(resposta_inicial).encode())
 
                     with open(data_arquivo,"wb") as arquivo:
@@ -47,7 +47,7 @@ def processar_mensagem(mensagem:json, client_socket):
                                 break
                             else:
                                 arquivo.write(dados)
-                    resposta_final = {"stt" : "ok 42", "msg" : ok_dict[42]}
+                    resposta_final = {"stt" : "ok 42", "msg" : ok_dict[42]} # arquivo recebido com sucesso pois o cliente que enviou o arquivo
                     client_socket.sendall(json.dumps(resposta_final).encode())
                     return
                 
