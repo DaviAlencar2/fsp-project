@@ -170,7 +170,7 @@ def send_file():
             
             # Extrair o nome que o servidor usou para o arquivo (se foi alterado)
             if "name" in resposta_final:
-                nome_salvo = resposta_final["arquivo"]
+                nome_salvo = resposta_final["name"]
                 print(f"Arquivo salvo no servidor como: {nome_salvo}")
             
             display_status_msg(resposta_final)

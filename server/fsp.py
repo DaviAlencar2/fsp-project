@@ -24,7 +24,7 @@ def processar_mensagem(mensagem:json, client_socket):
         if dados["comando"] == "LISTAR":
             arquivos = os.listdir(DATA_FILES_DIR)
             if len(arquivos) == 0:
-                resposta = {"stt" : "ok 47", "msg" : ok_dict[42]}
+                resposta = {"stt" : "ok 47", "msg" : ok_dict[47]}
             else:
                 resposta = {"stt" : "ok 45", "msg" : ok_dict[45], "files": arquivos}
         
@@ -35,7 +35,7 @@ def processar_mensagem(mensagem:json, client_socket):
             try:
                 with arquivo_lock:
                     if os.path.exists(data_arquivo):
-                        novo_nome = handle_duplicate_files(nome_arquivo,data_arquivo)
+                        novo_nome = handle_duplicate_files(nome_arquivo,DATA_FILES_DIR)
                         data_arquivo = os.path.join(DATA_FILES_DIR, os.path.basename(novo_nome))
                         
                     resposta_inicial = {"stt" : "ok 40", "msg" : ok_dict[40]}
@@ -94,7 +94,7 @@ def processar_mensagem(mensagem:json, client_socket):
 
                     else:
                         tamanho_arquivo = os.path.getsize(data_arquivo)
-                        resposta_inicial = {"stt" : "ok 40", "msg" : ok_dict[44],"size":tamanho_arquivo}
+                        resposta_inicial = {"stt" : "ok 44", "msg" : ok_dict[44],"size":tamanho_arquivo}
                         client_socket.sendall(json.dumps(resposta_inicial).encode())
 
                         time.sleep(0.2)

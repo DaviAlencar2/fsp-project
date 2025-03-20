@@ -31,8 +31,8 @@ As mensagens do protocolo FSP são codificadas em formato JSON, o que permite um
     "stt": "tipo código",    // Ex: "ok 45" ou "err 14"
     "msg": "Descrição do status",
     "files": [...],          // Opcional, presente apenas em respostas de listagem
-    "tamanho": 12345,        // Opcional, presente em respostas de download
-    "arquivo": "nome_final"  // Opcional, presente quando nome é alterado no servidor
+    "size": 12345,        // Opcional, presente em respostas de download
+    "name": "nome_final"  // Opcional, presente quando nome é alterado no servidor
 }
 ```
 
@@ -109,7 +109,7 @@ Download de um arquivo do servidor.
 {
     "stt": "ok 44",
     "msg": "Iniciando download.",
-    "tamanho": 12345  // Tamanho do arquivo em bytes
+    "size": 12345  // Tamanho do arquivo em bytes
 }
 ```
 
