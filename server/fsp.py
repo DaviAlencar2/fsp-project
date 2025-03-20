@@ -1,107 +1,129 @@
-import os
+import socket
 import json
-import threading
-import time
-from server.utils import handle_duplicate_files
-from status.serverError import error_dict
-from status.serverOk import ok_dict
+import os
+import datetime
+import csv
+from tkinter import filedialog
+from status.clientError import error_dict
+from status.clienteOK import ok_dict
 
-
-DATA_FILES_DIR = os.path.join(os.path.dirname(__file__), "data/files")
-os.makedirs(DATA_FILES_DIR, exist_ok=True)
+HOST_SRV = "192.168.0.5"
+PORT_SRV = 8080
 BUFFER_SIZE = 4096
-arquivo_lock = threading.Lock()
+DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), "downloads")
+os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 
-def processar_mensagem(mensagem, client_socket):
+def processar_mensagem(resposta):
+    print(json.dumps(resposta, indent=4))
+
+
+def send_msg(mensagem):
     try:
-        dados = json.loads(mensagem)
-
-        if dados["comando"] == "LISTAR":
-            arquivos = os.listdir(DATA_FILES_DIR)
-            resposta = {"stt" : "ok 45", "msg" : ok_dict[45], "files": arquivos}
-        
-        elif dados["comando"] == "ENVIAR": # usuario enviando arquivo ao servidor
-            nome_arquivo = dados["arquivo"]
-            data_arquivo = os.path.join(DATA_FILES_DIR, os.path.basename(nome_arquivo))
-
-            try:
-                with arquivo_lock:
-                    if os.path.exists(data_arquivo):
-                        novo_nome = handle_duplicate_files(nome_arquivo,data_arquivo)
-                        data_arquivo = os.path.join(DATA_FILES_DIR, os.path.basename(novo_nome))
-                        
-                    resposta_inicial = {"stt" : "ok 41", "msg" : ok_dict[41]}
-                    client_socket.sendall(json.dumps(resposta_inicial).encode())
-
-                    with open(data_arquivo,"wb") as arquivo:
-                        while True:
-                            dados = client_socket.recv(BUFFER_SIZE)
-                            if not dados:
-                                break
-                           
-                            if b"<EOF>" in dados:
-                                partes = dados.split(b"<EOF>", 1)
-                                arquivo.write(partes[0])  
-                                break
-                            else:
-                                arquivo.write(dados)
-                    resposta_final = {"stt" : "ok 42", "msg" : ok_dict[42]}
-                    client_socket.sendall(json.dumps(resposta_final).encode())
-                    return
-                
-            except:
-                resposta = {"stt" : "err 11", "msg" : error_dict[11]}
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+            client_socket.connect((HOST_SRV, PORT_SRV))
+            client_socket.sendall(json.dumps(mensagem).encode())
+            return json.loads(client_socket.recv(BUFFER_SIZE).decode())
+    except (socket.error, json.JSONDecodeError):
+        return {"stt": "err 60", "msg": error_dict.get(60, "Erro de conexão ou resposta inválida.")}
 
 
-        elif dados["comando"] == "DELETAR": # usuario deletando arquivo do servidor
-            nome_arquivo = dados["arquivo"]
-            data_arquivo = os.path.join(DATA_FILES_DIR, os.path.basename(nome_arquivo))
-
-            try:
-                with arquivo_lock:
-                    if not os.path.exists(data_arquivo):
-                        resposta = {"status" : "erro 14", "msg" : error_dict[14]}
-                    else:
-                        os.remove(data_arquivo)
-                        resposta = {"stt" : "ok 43", "msg" : ok_dict[43]}
-            except:
-                resposta = {"stt" : "erro 13", "msg" : error_dict[13]}
+def executar_comando(comando, arquivo=None):
+    mensagem = {"comando": comando}
+    if arquivo:
+        mensagem["arquivo"] = arquivo
+    return send_msg(mensagem)
 
 
-        elif dados["comando"] == "BAIXAR": # usuario baixando arquivo do servidor
-            nome_arquivo = dados["arquivo"]
-            data_arquivo = os.path.join(DATA_FILES_DIR, os.path.basename(nome_arquivo))
+def list_files():
+    resposta = executar_comando("LISTAR")
+    processar_mensagem(resposta)
 
-            try:
-                with arquivo_lock:
-                    if not os.path.exists(data_arquivo):
-                        resposta = {"stt" : "err 14", "msg" : error_dict[14]}
-                        client_socket.sendall(json.dumps(resposta).encode())
-                        return
 
-                    else:
-                        resposta_inicial = {"stt" : "ok 44", "msg" : ok_dict[44]}
-                        client_socket.sendall(json.dumps(resposta_inicial).encode())
+def send_file():
+    file_name = filedialog.askopenfilename()
+    if not os.path.isfile(file_name):
+        processar_mensagem({"stt": "err 51", "msg": error_dict.get(51, "Arquivo não encontrado.")})
+        return
 
-                        time.sleep(0.2)
+    resposta = executar_comando("ENVIAR", os.path.basename(file_name))
+    processar_mensagem(resposta)
 
-                        with open(data_arquivo,"rb") as file:
-                            while True:
-                                dados = file.read(4096)
-                                if not dados:
-                                    break
-                                client_socket.sendall(dados)
-                        client_socket.sendall(b"<EOF>")
-                return
-            
-            except:
-                resposta = {"stt" : "err 12", "msg" : error_dict[12]}
+    if not resposta["stt"].startswith("ok"):
+        return
 
+    try:
+        with open(file_name, "rb") as file, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+            client_socket.connect((HOST_SRV, PORT_SRV))
+            while chunk := file.read(BUFFER_SIZE):
+                client_socket.sendall(chunk)
+            client_socket.sendall(b"<EOF>")
+        transfer_log(os.path.basename(file_name))
+        processar_mensagem({"stt": "ok 61", "msg": ok_dict.get(61, "Arquivo enviado com sucesso.")})
+    except socket.error:
+        processar_mensagem({"stt": "err 60", "msg": error_dict.get(60, "Erro de conexão ao enviar arquivo.")})
+
+
+def download_file():
+    file_name = input("Nome do arquivo a ser baixado: ")
+    resposta = executar_comando("BAIXAR", file_name)
+
+    if not resposta["stt"].startswith("ok"):
+        processar_mensagem(resposta)
+        return
+
+    caminho_salvo = os.path.join(DOWNLOAD_DIR, file_name)
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket, open(caminho_salvo, "wb") as file:
+            client_socket.connect((HOST_SRV, PORT_SRV))
+            client_socket.sendall(json.dumps({"comando": "BAIXAR", "arquivo": file_name}).encode())
+
+            while (data := client_socket.recv(BUFFER_SIZE)):
+                if b"<EOF>" in data:
+                    file.write(data.split(b"<EOF>")[0])
+                    break
+                file.write(data)
+
+        processar_mensagem({"stt": "ok 62", "msg": ok_dict.get(62, "Arquivo baixado com sucesso.")})
+    except socket.error:
+        processar_mensagem({"stt": "err 60", "msg": error_dict.get(60, "Erro de conexão ao baixar arquivo.")})
+
+
+def delete_file():
+    file_name = input("Nome do arquivo a ser excluído: ")
+    resposta = executar_comando("DELETAR", file_name)
+    processar_mensagem(resposta)
+
+
+def transfer_log(file_name):
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("client/log_transferencia.csv", mode="a", newline="") as f:
+        csv.writer(f).writerow([file_name, now] if f.tell() != 0 else ["Nome do Arquivo:", "Data, Hora:"])
+
+
+def main():
+    while True:
+        print("\nEscolha uma opção:")
+        print("1 - Listar arquivos")
+        print("2 - Enviar arquivo")
+        print("3 - Baixar arquivo")
+        print("4 - Excluir arquivo")
+        print("0 - Sair")
+
+        opcao = input("Opção: ")
+        if opcao == "1":
+            list_files()
+        elif opcao == "2":
+            send_file()
+        elif opcao == "3":
+            download_file()
+        elif opcao == "4":
+            delete_file()
+        elif opcao == "0":
+            break
         else:
-            resposta = {"stt" : "err 21", "msg" : error_dict[21]}
+            processar_mensagem({"stt": "err 99", "msg": "Opção inválida."})
 
-    except json.JSONDecodeError:
-        resposta = {"stt" : "err 22", "msg" : error_dict[22]}
 
-    client_socket.sendall(json.dumps(resposta).encode())
+if __name__ == "__main__":
+    main()
