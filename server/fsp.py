@@ -8,9 +8,6 @@ from status.protocolError import error_dict
 from status.protocolOk import ok_dict
 
 
-HOST = sys.argv[1]
-PORT = int(sys.argv[2])
-
 DATA_FILES_DIR = os.path.join(os.path.dirname(__file__), "data/files")
 os.makedirs(DATA_FILES_DIR, exist_ok=True)
 BUFFER_SIZE = 4096
