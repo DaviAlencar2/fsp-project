@@ -17,7 +17,7 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 def display_status_msg(resposta):
     if "stt" in resposta:
         try:
-            codigo = int(resposta["stt"].split()[1])  
+            codigo = (resposta["stt"].split()[1])  
         except (IndexError, ValueError):
             codigo = 22  # formato n seja algo como "ok xx" ou "err xx"
     else:
@@ -51,24 +51,39 @@ def list_files():
 
 
 def send_file():
-    file_name = filedialog.askopenfilename()
-    if not os.path.exists(file_name):
+    file_path = filedialog.askopenfilename()
+    if not file_path:  # Usuário cancelou a seleção
+        print("Operação de envio cancelada.")
+        return
+        
+    if not os.path.exists(file_path):
         print(f"err 14: {error_dict[14]}")  # arquivo não encontrado
         return
 
-    with open(file_name, "rb") as file, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-        client_socket.connect((HOST_SRV, PORT_SRV))
-        client_socket.sendall(json.dumps({"comando": "ENVIAR", "arquivo": os.path.basename(file_name)}).encode())
-
-        # if not send_msg({"comando": "ENVIAR", "arquivo": os.path.basename(file_name)})["stt"].startswith("ok"):
-        #     print(f"err 55: {error_dict[55]}")  # erro desconhecido
-        #     return
-
-        while chunk := file.read(BUFFER_SIZE):
-            client_socket.sendall(chunk)
-        client_socket.sendall(b"<EOF>")
-
-        display_status_msg(json.loads(client_socket.recv(BUFFER_SIZE).decode()))
+    try:
+        with open(file_path, "rb") as file, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+            client_socket.connect((HOST_SRV, PORT_SRV))
+            client_socket.sendall(json.dumps({"comando": "ENVIAR", "arquivo": os.path.basename(file_path)}).encode())
+            
+            # Receber resposta inicial do servidor
+            resposta_inicial = json.loads(client_socket.recv(BUFFER_SIZE).decode())
+            if not resposta_inicial["stt"].startswith("ok"):
+                display_status_msg(resposta_inicial)
+                return
+                
+            # Enviar conteúdo do arquivo
+            while chunk := file.read(BUFFER_SIZE):
+                client_socket.sendall(chunk)
+            client_socket.sendall(b"<EOF>")
+            
+            # Receber resposta final
+            resposta_final = json.loads(client_socket.recv(BUFFER_SIZE).decode())
+            display_status_msg(resposta_final)
+    
+    except ConnectionRefusedError:
+        print(f"Erro: Não foi possível conectar ao servidor {HOST_SRV}:{PORT_SRV}")
+    except Exception as e:
+        print(f"err 11: {error_dict[11]}")
 
 
 def download_file():
@@ -90,7 +105,7 @@ def download_file():
                 break
             file.write(data)
 
-    display_status_msg({"stt": "ok 46", "msg": ok_dict[46]})
+        display_status_msg(json.loads(client_socket.recv(BUFFER_SIZE).decode()))
 
 
 def delete_file():
