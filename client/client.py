@@ -1,4 +1,8 @@
-import socket; import json; import os; import datetime; import csv
+import socket
+import json
+import os
+import datetime
+import csv
 from tkinter import filedialog
 
 
