@@ -14,12 +14,21 @@ DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), "downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 
-def processar_mensagem(resposta):
-    codigo = int(resposta.get("stt", "err 22").split()[1]) if "stt" in resposta else 22 # erro desconhecido
-    if resposta["stt"].startswith("ok"):
-        print (f"ok {codigo}: {ok_dict.get(codigo, 'Mensagem de sucesso desconhecida')}")
+def display_status_msg(resposta):
+    if "stt" in resposta:
+        try:
+            codigo = int(resposta["stt"].split()[1])  
+        except (IndexError, ValueError):
+            codigo = 22  # formato n seja algo como "ok xx" ou "err xx"
     else:
-        print (f"err {codigo}: {error_dict.get(codigo, 'Erro desconhecido')}")
+        codigo = 22  # n tiver stt
+
+    if resposta["stt"].startswith("ok"):
+        mensagem = ok_dict.get(codigo, 'Mensagem de sucesso desconhecida') # se n tiver no dicionario, retorna a mensagem padrão
+        print(f"ok {codigo}: {mensagem}") # se tiver, printa a mensagem personalizada do dicionario
+    else:
+        mensagem = error_dict.get(codigo, 'Erro desconhecido')
+        print(f"err {codigo}: {mensagem}")
 
 
 def send_msg(mensagem):
@@ -38,7 +47,7 @@ def list_files():
         print("\nARQUIVOS NO SERVIDOR:")
         for file in resposta.get("files", []):
             print(f" - {file}")
-    processar_mensagem(resposta)
+    display_status_msg(resposta)
 
 
 def send_file():
@@ -59,7 +68,7 @@ def send_file():
             client_socket.sendall(chunk)
         client_socket.sendall(b"<EOF>")
 
-        processar_mensagem(json.loads(client_socket.recv(BUFFER_SIZE).decode()))
+        display_status_msg(json.loads(client_socket.recv(BUFFER_SIZE).decode()))
 
 
 def download_file():
@@ -67,7 +76,7 @@ def download_file():
     resposta = send_msg({"comando": "BAIXAR", "arquivo": file_name})
 
     if not resposta["stt"].startswith("ok"):
-        processar_mensagem(resposta)
+        display_status_msg(resposta)
         return
 
     caminho_salvo = os.path.join(DOWNLOAD_DIR, file_name)
@@ -87,7 +96,7 @@ def download_file():
 def delete_file():
     file_name = input("Nome do arquivo a ser excluído: ")
     resposta = send_msg({"comando": "DELETAR", "arquivo": file_name})
-    processar_mensagem(resposta)
+    display_status_msg(resposta)
 
 def main():
     print("==== Cliente FSP ====")
