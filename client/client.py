@@ -2,6 +2,7 @@ import socket
 import json
 import os
 import sys
+import time
 from tkinter import filedialog
 from status.protocolError import error_dict
 from status.protocolOk import ok_dict
@@ -65,6 +66,8 @@ def download_file():
                         file.write(data.split(b"<EOF>")[0])
                         break
                     file.write(data)
+
+            client_socket.settimeout(0.5)
                     
             try:
                 resposta_final = json.loads(client_socket.recv(BUFFER_SIZE).decode())
