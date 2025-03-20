@@ -37,7 +37,7 @@ def download_file():
     file_name = input("Nome do arquivo a ser baixado: ")
     
     try:
-        # Adaptar handle_duplicate_files para o cliente de forma mais estruturada
+        # Adaptar handle_duplicate_files para o cliente
         nm, ext = os.path.splitext(file_name)
         nome_local = f"{nm}{ext}"
         contador = 1
@@ -57,25 +57,40 @@ def download_file():
                 display_status_msg(resposta_inicial)
                 return
             
-            # Não exibimos a mensagem de início de download para não confundir o usuário
             print(f"Baixando arquivo '{file_name}'...")
-                
+            
+            eof_encontrado = False
             with open(caminho_salvo, "wb") as file:
-                while (data := client_socket.recv(BUFFER_SIZE)):
+                while not eof_encontrado and (data := client_socket.recv(BUFFER_SIZE)):
                     if b"<EOF>" in data:
-                        file.write(data.split(b"<EOF>")[0])
+                        partes = data.split(b"<EOF>", 1)
+                        file.write(partes[0])
+                        eof_encontrado = True
                         break
                     file.write(data)
-
-            time.sleep(0.5)  # Aguardar um pouco para garantir que o arquivo foi salvo
-                    
-            try:
-                resposta_final = json.loads(client_socket.recv(BUFFER_SIZE).decode())
-                if resposta_final["stt"].startswith("ok"):
-                    print(f"Arquivo salvo como: {nome_local}")
-                display_status_msg(resposta_final)
-            except json.JSONDecodeError:
-                print(f"Erro ao processar resposta do servidor")
+            
+            if eof_encontrado:
+                try:
+                    # Definir um timeout para evitar bloqueio permanente
+                    client_socket.settimeout(2.0)
+                    resposta_final = json.loads(client_socket.recv(BUFFER_SIZE).decode())
+                    if resposta_final["stt"].startswith("ok"):
+                        print(f"Arquivo salvo como: {nome_local}")
+                    display_status_msg(resposta_final)
+                except socket.timeout:
+                    print(f"Arquivo baixado e salvo como: {nome_local}")
+                except json.JSONDecodeError:
+                    print(f"Erro ao processar resposta do servidor")
+            else:
+                print("Erro: marcador de fim de arquivo não encontrado")
+                
+    except ConnectionRefusedError:
+        print(f"Erro: Não foi possível conectar ao servidor {HOST_SRV}:{PORT_SRV}")
+    except PermissionError:
+        print(f"Erro: Sem permissão para salvar o arquivo")
+    except Exception as e:
+        print(f"err 12: {error_dict[12]}")
+        print(f"Detalhes: {str(e)}")
                 
     except ConnectionRefusedError:
         print(f"Erro: Não foi possível conectar ao servidor {HOST_SRV}:{PORT_SRV}")
