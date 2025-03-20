@@ -67,7 +67,7 @@ def download_file():
                         break
                     file.write(data)
 
-            client_socket.settimeout(0.5)
+            time.sleep(0.5)  # Aguardar um pouco para garantir que o arquivo foi salvo
                     
             try:
                 resposta_final = json.loads(client_socket.recv(BUFFER_SIZE).decode())
