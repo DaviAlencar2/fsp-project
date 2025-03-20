@@ -18,9 +18,9 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 def processar_mensagem(resposta):
     codigo = int(resposta.get("stt", "err 55").split()[1]) if "stt" in resposta else 55 # erro desconhecido
     if resposta["stt"].startswith("ok"):
-        print(f"SUCESSO {codigo}: {ok_dict.get(codigo, 'Mensagem de sucesso desconhecida')}")
+        print(f"ok {codigo}: {ok_dict.get(codigo, 'Mensagem de sucesso desconhecida')}")
     else:
-        print(f"ERRO {codigo}: {error_dict.get(codigo, 'Erro desconhecido')}")
+        print(f"err {codigo}: {error_dict.get(codigo, 'Erro desconhecido')}")
 
 
 def send_msg(mensagem):
@@ -53,7 +53,7 @@ def send_file():
         client_socket.sendall(json.dumps({"comando": "ENVIAR", "arquivo": os.path.basename(file_name)}).encode())
 
         if not send_msg({"comando": "ENVIAR", "arquivo": os.path.basename(file_name)})["stt"].startswith("ok"):
-            print(f"ERRO 55: {error_dict[55]}")  # erro desconhecido
+            print(f"err 55: {error_dict[55]}")  # erro desconhecido
             return
 
         while chunk := file.read(BUFFER_SIZE):
@@ -83,7 +83,7 @@ def download_file():
                 break
             file.write(data)
 
-    print(f"SUCESSO 61: {ok_dict[61]}")  # Arquivo baixado com sucesso
+    print(f"ok 61: {ok_dict[61]}")  # Arquivo baixado com sucesso
 
 
 def delete_file():
