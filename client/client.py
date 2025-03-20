@@ -88,24 +88,50 @@ def send_file():
 
 def download_file():
     file_name = input("Nome do arquivo a ser baixado: ")
-
-    caminho_salvo = os.path.join(DOWNLOAD_DIR, file_name)
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket, open(caminho_salvo, "wb") as file:
-        client_socket.connect((HOST_SRV, PORT_SRV))
-        client_socket.sendall(json.dumps({"comando": "BAIXAR", "arquivo": file_name}).encode())
-
-        reposta_inicial = json.loads(client_socket.recv(BUFFER_SIZE).decode())
-        if not reposta_inicial["stt"].startswith("ok"):
-            display_status_msg(reposta_inicial)
-            return
+    
+    try:
+        # Adaptar handle_duplicate_files para o cliente
+        nm, ext = os.path.splitext(file_name)
+        nome_local = f"{nm}{ext}"
+        contador = 1
         
-        while (data := client_socket.recv(BUFFER_SIZE)):
-            if b"<EOF>" in data:
-                file.write(data.split(b"<EOF>")[0])
-                break
-            file.write(data)
-
-        display_status_msg(json.loads(client_socket.recv(BUFFER_SIZE).decode()))
+        while os.path.exists(os.path.join(DOWNLOAD_DIR, nome_local)):
+            nome_local = f"{nm}({contador}){ext}"
+            contador += 1
+            
+        caminho_salvo = os.path.join(DOWNLOAD_DIR, nome_local)
+        
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+            client_socket.connect((HOST_SRV, PORT_SRV))
+            client_socket.sendall(json.dumps({"comando": "BAIXAR", "arquivo": file_name}).encode())
+            
+            resposta_inicial = json.loads(client_socket.recv(BUFFER_SIZE).decode())
+            if not resposta_inicial["stt"].startswith("ok"):
+                display_status_msg(resposta_inicial)
+                return
+                
+            with open(caminho_salvo, "wb") as file:
+                while (data := client_socket.recv(BUFFER_SIZE)):
+                    if b"<EOF>" in data:
+                        file.write(data.split(b"<EOF>")[0])
+                        break
+                    file.write(data)
+                    
+            try:
+                resposta_final = json.loads(client_socket.recv(BUFFER_SIZE).decode())
+                display_status_msg(resposta_final)
+                if resposta_final["stt"].startswith("ok"):
+                    print(f"Arquivo salvo como: {nome_local}")
+            except json.JSONDecodeError:
+                print(f"Erro ao processar resposta do servidor")
+                
+    except ConnectionRefusedError:
+        print(f"Erro: Não foi possível conectar ao servidor {HOST_SRV}:{PORT_SRV}")
+    except PermissionError:
+        print(f"Erro: Sem permissão para salvar o arquivo")
+    except Exception as e:
+        print(f"err 12: {error_dict[12]}")
+        print(f"Detalhes: {str(e)}")
 
 
 def delete_file():
