@@ -3,6 +3,8 @@ import json
 import threading
 import time
 from server.utils import handle_duplicate_files
+from status.serverError import error_dict
+from status.serverOk import ok_dict
 
 DATA_FILES_DIR = os.path.join(os.path.dirname(__file__), "data/files")
 BUFFER_SIZE = 4096
@@ -14,7 +16,7 @@ def processar_mensagem(mensagem, client_socket):
 
         if dados["comando"] == "LISTAR":
             arquivos = os.listdir(DATA_FILES_DIR)
-            resposta = {"status": "ok", "arquivos": arquivos}
+            resposta = {"stt" : "ok 45", "msg" : ok_dict[45]}
         
         elif dados["comando"] == "ENVIAR": # usuario enviando arquivo ao servidor
             nome_arquivo = dados["arquivo"]
@@ -25,7 +27,7 @@ def processar_mensagem(mensagem, client_socket):
                     if os.path.exists(data_arquivo):
                         novo_nome = handle_duplicate_files(nome_arquivo,data_arquivo)
                         data_arquivo = os.path.join(DATA_FILES_DIR, os.path.basename(novo_nome))
-                    resposta_inicial = {"status":"ok","mensagem":"Iniciando trasferencia para o servidor"}
+                    resposta_inicial = {"stt" : "ok 41", "msg" : ok_dict[41]}
                     client_socket.sendall(json.dumps(resposta_inicial).encode())
 
                     with open(data_arquivo,"wb") as arquivo:
@@ -40,11 +42,11 @@ def processar_mensagem(mensagem, client_socket):
                                 break
                             else:
                                 arquivo.write(dados)
-                    resposta_final = {"status":"ok","mensagem":"Arquivo recebido com sucesso."}
+                    resposta_final = {"status" : "ok 42", "msg" : ok_dict[42]}
                     client_socket.sendall(json.dumps(resposta_final).encode())
                     return
             except:
-                resposta = {"status":"erro"}
+                resposta = {"stt" : "err 11", "msg" : error_dict[11]}
 
 
         elif dados["comando"] == "DELETAR": # usuario deletando arquivo do servidor
@@ -54,12 +56,12 @@ def processar_mensagem(mensagem, client_socket):
             try:
                 with arquivo_lock:
                     if not os.path.exists(data_arquivo):
-                        resposta = {"status":"erro", "mensagem":"Arquivo não encontrado."}
+                        resposta = {"status" : "erro 14", "msg" : error_dict[14]}
                     else:
                         os.remove(data_arquivo)
-                        resposta = {"status":"ok", "mensagem":"Arquivo deletado com sucesso."}
+                        resposta = {"stt" : "ok 43", "msg" : ok_dict[43]}
             except:
-                resposta = {"status":"erro", "mensagem":"Erro ao deletar arquivo."}
+                resposta = {"stt" : "erro 13", "msg" : error_dict[13]}
 
 
         elif dados["comando"] == "BAIXAR": # usuario baixando arquivo do servidor
@@ -68,12 +70,12 @@ def processar_mensagem(mensagem, client_socket):
             try:
                 with arquivo_lock:
                     if not os.path.exists(data_arquivo):
-                        resposta = {"status":"erro", "mensagem":"Arquivo não encontrado."}
+                        resposta = {"stt" : "err 14", "msg" : error_dict[14]}
                         client_socket.sendall(json.dumps(resposta).encode())
                         return
 
                     else:
-                        resposta_inicial = {"status":"ok", "mensagem":"iniciando download"}
+                        resposta_inicial = {"stt" : "ok 44", "msg" : ok_dict[44]}
                         client_socket.sendall(json.dumps(resposta_inicial).encode())
 
                         time.sleep(0.2)
@@ -87,12 +89,11 @@ def processar_mensagem(mensagem, client_socket):
                         client_socket.sendall(b"<EOF>")
                 return
             except:
-                resposta = {"status":"erro", "mensagem":"Erro ao enviar arquivo"}
+                resposta = {"stt" : "err 12", "msg" : error_dict[12]}
 
         else:
-            resposta = {"status": "erro", "mensagem": "Comando inválido."}
-
+            resposta = {"stt" : "err 21", "msg" : error_dict[21]}
     except json.JSONDecodeError:
-        resposta = {"status": "erro", "mensagem": "Formato de mensagem inválido."}
+        resposta = {"stt" : "err 22", "msg" : error_dict[22]}
 
     client_socket.sendall(json.dumps(resposta).encode())
