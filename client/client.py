@@ -7,12 +7,12 @@ from tkinter import filedialog
 from status.clientError import error_dict
 from status.clienteOK import ok_dict
 
+
 HOST_SRV = "192.168.0.4"
 PORT_SRV = 8080
 BUFFER_SIZE = 4096
 DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), "downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-
 
 
 def processar_mensagem(resposta):
@@ -61,7 +61,6 @@ def send_file():
         client_socket.sendall(b"<EOF>")
 
         processar_mensagem(json.loads(client_socket.recv(BUFFER_SIZE).decode()))
-        transfer_log(os.path.basename(file_name))
 
 
 def download_file():
@@ -90,15 +89,6 @@ def delete_file():
     file_name = input("Nome do arquivo a ser excluído: ")
     resposta = send_msg({"comando": "DELETAR", "arquivo": file_name})
     processar_mensagem(resposta)
-    if resposta["stt"].startswith("ok"):
-        transfer_log(file_name)
-
-
-def transfer_log(file_name):
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open("client/log_transferencia.csv", mode="a", newline="") as f:
-        csv.writer(f).writerow([file_name, now] if f.tell() != 0 else ["Nome do Arquivo:", "Data, Hora:"])
-
 
 def main():
     print("==== Cliente FSP ====")
