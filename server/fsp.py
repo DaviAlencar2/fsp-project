@@ -103,7 +103,7 @@ def processar_mensagem(mensagem:json, client_socket):
                         with open(data_arquivo,"rb") as file:
                             while bytes_enviados < tamanho_arquivo:
                                 dados = file.read(4096)
-                                if not dados or bytes_recebidos == tamanho_arquivo:
+                                if not dados or bytes_enviados == tamanho_arquivo:
                                     break
                                 client_socket.sendall(dados)
                                 bytes_enviados += len(dados)

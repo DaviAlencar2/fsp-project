@@ -63,12 +63,13 @@ def download_file():
             tamanho_total = resposta_inicial.get("size", 0)
             with open(caminho_salvo, "wb") as file:
                 # Usar o tamanho do arquivo para controlar a transferência
+                bytes_recebidos = 0
                 if tamanho_total > 0:
-                    bytes_recebidos = 0
+                   
                     # Continuar recebendo até atingir o tamanho total
                     while bytes_recebidos < tamanho_total:
                         data = client_socket.recv(BUFFER_SIZE)
-                        if not data:
+                        if not data or bytes_recebidos == tamanho_total:
                             break
                         file.write(data)
                         bytes_recebidos += len(data)
@@ -144,7 +145,7 @@ def send_file():
         with open(file_path, "rb") as file, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             tamanho_arquivo = os.path.getsize(file_path)
             client_socket.connect((HOST_SRV, PORT_SRV))
-            client_socket.sendall(json.dumps({"comando": "ENVIAR", "arquivo": nome_arquivo,"size":tamanho_arquivo}).encode())
+            client_socket.sendall(json.dumps({"comando": "ENVIAR", "arquivo": nome_arquivo,"tamanho":tamanho_arquivo}).encode())
             
             # Receber resposta inicial do servidor
             resposta_inicial = json.loads(client_socket.recv(BUFFER_SIZE).decode())
