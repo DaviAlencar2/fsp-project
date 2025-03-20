@@ -53,7 +53,7 @@ def processar_mensagem(mensagem:json, client_socket):
                             else:
                                 arquivo.write(dados)
 
-                    resposta_final = {"stt" : "ok 41", "msg" : ok_dict[42]}
+                    resposta_final = {"stt" : "ok 41", "msg" : ok_dict[41]}
                     client_socket.sendall(json.dumps(resposta_final).encode())
 
                     return
