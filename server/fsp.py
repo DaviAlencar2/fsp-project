@@ -69,7 +69,7 @@ def processar_mensagem(mensagem:json, client_socket):
             try:
                 with arquivo_lock:
                     if not os.path.exists(data_arquivo):
-                        resposta = {"status" : "erro 14", "msg" : error_dict[14]}
+                        resposta = {"stt" : "erro 13", "msg" : error_dict[13]}
                     else:
                         os.remove(data_arquivo)
                         resposta = {"stt" : "ok 43", "msg" : ok_dict[43]}
