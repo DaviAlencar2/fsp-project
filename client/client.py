@@ -91,6 +91,7 @@ def download_file():
     except Exception as e:
         print(f"err 12: {error_dict[12]}")
         print(f"Detalhes: {str(e)}")
+        
                 
 def send_msg(mensagem):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
@@ -99,8 +100,10 @@ def send_msg(mensagem):
         try:
             return json.loads(client_socket.recv(BUFFER_SIZE).decode())
         except json.JSONDecodeError:
-            return {"stt": "err 22", "msg": error_dict[22]}  # resposta inválida do servidor
-
+            return {"stt": "err 22", "msg": error_dict[22]}
+        except Exception as e:
+            return {"stt": "err 56", "msg": error_dict[56]}
+        
 
 def list_files():
     resposta = send_msg({"comando": "LISTAR"})
@@ -142,14 +145,26 @@ def send_file():
             display_status_msg(resposta_final)
     
     except ConnectionRefusedError:
-        print(f"Erro: Não foi possível conectar ao servidor {HOST_SRV}:{PORT_SRV}")
+        print(f"err 51: {error_dict[51]}")
+    except PermissionError:
+        print(f"err 52: {error_dict[52]}")
     except Exception as e:
         print(f"err 11: {error_dict[11]}")
+        print(f"Detalhes: {str(e)}")
 
 def delete_file():
-    file_name = input("Nome do arquivo a ser excluído: ")
-    resposta = send_msg({"comando": "DELETAR", "arquivo": file_name})
-    display_status_msg(resposta)
+    try:
+        file_name = input("Nome do arquivo a ser excluído: ")
+        resposta = send_msg({"comando": "DELETAR", "arquivo": file_name})
+        display_status_msg(resposta)
+    except ConnectionRefusedError:
+        print(f"err 51: {error_dict[51]}")
+    except PermissionError:
+        print(f"err 52: {error_dict[52]}")
+    except Exception as e:
+        print(f"err 13: {error_dict[13]}")
+        print(f"Detalhes: {str(e)}")
+
 
 def main():
     print("==== Cliente FSP ====")
