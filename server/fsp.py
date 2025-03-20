@@ -3,11 +3,13 @@ import json
 import os
 import datetime
 import csv
+import sys
 from tkinter import filedialog
 from status.clientError import error_dict
 from status.clienteOK import ok_dict
 
-HOST_SRV = "192.168.0.5"
+if len(sys.argv) > 1:
+    HOST_SRV = sys.argv[1]  # o IP será passado como argumento
 PORT_SRV = 8080
 BUFFER_SIZE = 4096
 DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), "downloads")
