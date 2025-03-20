@@ -60,30 +60,33 @@ def download_file():
             
             print(f"Baixando arquivo '{file_name}'...")
             
-            eof_encontrado = False
+            tamanho_total = resposta_inicial.get("size", 0)
             with open(caminho_salvo, "wb") as file:
-                while not eof_encontrado and (data := client_socket.recv(BUFFER_SIZE)):
-                    if b"<EOF>" in data:
-                        partes = data.split(b"<EOF>", 1)
-                        file.write(partes[0])
-                        eof_encontrado = True
-                        break
-                    file.write(data)
-            
-            if eof_encontrado:
-                try:
-                    # Definir um timeout para evitar bloqueio permanente
-                    client_socket.settimeout(2.0)
-                    resposta_final = json.loads(client_socket.recv(BUFFER_SIZE).decode())
-                    if resposta_final["stt"].startswith("ok"):
-                        print(f"Arquivo salvo como: {nome_local}")
-                    display_status_msg(resposta_final)
-                except socket.timeout:
-                    print(f"Arquivo baixado e salvo como: {nome_local}")
-                except json.JSONDecodeError:
-                    print(f"Erro ao processar resposta do servidor")
-            else:
-                print("Erro: marcador de fim de arquivo não encontrado")
+                # Usar o tamanho do arquivo para controlar a transferência
+                if tamanho_total > 0:
+                    bytes_recebidos = 0
+                    # Continuar recebendo até atingir o tamanho total
+                    while bytes_recebidos < tamanho_total:
+                        data = client_socket.recv(BUFFER_SIZE)
+                        if not data:
+                            break
+                        file.write(data)
+                        bytes_recebidos += len(data)
+                        # Exibir progresso como porcentagem
+                        progresso = (bytes_recebidos / tamanho_total) * 100
+                        print(f"\rProgresso: {progresso:.1f}%", end="")
+                   
+            try:
+                # Definir um timeout para evitar bloqueio permanente
+                client_socket.settimeout(2.0)
+                resposta_final = json.loads(client_socket.recv(BUFFER_SIZE).decode())
+                if resposta_final["stt"].startswith("ok"):
+                    print(f"Arquivo salvo como: {nome_local}")
+                display_status_msg(resposta_final)
+            except socket.timeout:
+                print(f"Arquivo baixado e salvo como: {nome_local}")
+            except json.JSONDecodeError:
+                print(f"Erro ao processar resposta do servidor")
                 
     except ConnectionRefusedError:
         print(f"Erro: Não foi possível conectar ao servidor {HOST_SRV}:{PORT_SRV}")
@@ -134,14 +137,14 @@ def send_file():
         if resposta_listar["stt"].startswith("ok") and "files" in resposta_listar:
             arquivos_servidor = resposta_listar.get("files", [])
             if nome_arquivo in arquivos_servidor:
-                # Arquivo com mesmo nome já existe
                 print(f"Arquivo '{nome_arquivo}' já existe no servidor.")
                 print("O servidor vai gerar um nome único para este arquivo.")
                 nome_arquivo = handle_duplicate_files(nome_arquivo,resposta_listar["files"])
         
         with open(file_path, "rb") as file, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+            tamanho_arquivo = os.path.getsize(file_path)
             client_socket.connect((HOST_SRV, PORT_SRV))
-            client_socket.sendall(json.dumps({"comando": "ENVIAR", "arquivo": nome_arquivo}).encode())
+            client_socket.sendall(json.dumps({"comando": "ENVIAR", "arquivo": nome_arquivo,"size":tamanho_arquivo}).encode())
             
             # Receber resposta inicial do servidor
             resposta_inicial = json.loads(client_socket.recv(BUFFER_SIZE).decode())
@@ -151,7 +154,7 @@ def send_file():
             
             # Enviar conteúdo do arquivo com barra de progresso
             print(f"Enviando arquivo '{nome_arquivo}'...")
-            tamanho_arquivo = os.path.getsize(file_path)
+            
             enviado_total = 0
             
             while chunk := file.read(BUFFER_SIZE):
@@ -160,10 +163,8 @@ def send_file():
                 progresso = (enviado_total / tamanho_arquivo) * 100
                 print(f"\rProgresso: {progresso:.1f}%", end="")
                 
-            client_socket.sendall(b"<EOF>")
-            print()  # Nova linha após a barra de progresso
-            
-            # Receber resposta final
+            print()  
+                    
             resposta_final = json.loads(client_socket.recv(BUFFER_SIZE).decode())
             
             # Extrair o nome que o servidor usou para o arquivo (se foi alterado)
