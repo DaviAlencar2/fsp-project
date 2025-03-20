@@ -92,15 +92,6 @@ def download_file():
         print(f"err 12: {error_dict[12]}")
         print(f"Detalhes: {str(e)}")
                 
-    except ConnectionRefusedError:
-        print(f"Erro: Não foi possível conectar ao servidor {HOST_SRV}:{PORT_SRV}")
-    except PermissionError:
-        print(f"Erro: Sem permissão para salvar o arquivo")
-    except Exception as e:
-        print(f"err 12: {error_dict[12]}")
-        print(f"Detalhes: {str(e)}")
-
-
 def send_msg(mensagem):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         client_socket.connect((HOST_SRV, PORT_SRV))
